@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+from searinks.disciplines import check_overrides
+
 
 @dataclass(frozen=True)
 class RecTimesSource:
@@ -19,3 +21,7 @@ class RecTimesSource:
     venues: dict[int, str]
     drop_in_groups: frozenset[str]
     discipline_overrides: dict[str, str] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Reject overrides to unknown disciplines."""
+        check_overrides(self.discipline_overrides)

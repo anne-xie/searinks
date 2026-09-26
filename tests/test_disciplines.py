@@ -1,6 +1,6 @@
 import pytest
 
-from searinks.disciplines import discipline_for
+from searinks.disciplines import check_overrides, discipline_for, unmatched_overrides
 
 
 @pytest.mark.parametrize(
@@ -48,3 +48,34 @@ def test_discipline_for_prefers_exact_title_overrides(sport: str | None, title: 
 
     # WHEN/THEN: an exact title match wins; anything else falls back to the shared keywords
     assert discipline_for(sport, title, overrides) == expected
+
+
+def test_check_overrides_accepts_known_disciplines() -> None:
+    # WHEN/THEN: overrides that only use known disciplines pass
+    check_overrides({"SJHA": "hockey", "SSC": "figure", "Open Skate": "public"})
+
+
+def test_check_overrides_rejects_unknown_disciplines() -> None:
+    # GIVEN: overrides with a typo'd discipline
+    overrides = {"SJHA": "hocky", "SSC": "figure"}
+
+    # WHEN/THEN: checking them raises, naming the offending entry
+    with pytest.raises(ValueError, match="'SJHA': 'hocky'"):
+        check_overrides(overrides)
+
+
+@pytest.mark.parametrize(
+    ("titles", "expected"),
+    [
+        (["SJHA", "OVHL", "Stick & Puck"], []),
+        (["SJHA", "Stick & Puck"], ["OVHL"]),
+        ([], ["OVHL", "SJHA"]),
+        (["sjha"], ["OVHL", "SJHA"]),
+    ],
+)
+def test_unmatched_overrides_lists_titles_never_seen(titles: list[str], expected: list[str]) -> None:
+    # GIVEN: a rink overriding two titles
+    overrides = {"SJHA": "hockey", "OVHL": "hockey"}
+
+    # WHEN/THEN: overridden titles missing from the fetched titles are returned, sorted
+    assert unmatched_overrides(overrides, titles) == expected

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -240,3 +241,63 @@ def test_parse_events_resolves_discipline_with_rink_overrides(desc: str, discipl
 
     # THEN: the rink's override applies, and other titles fall back to the shared keywords
     assert parsed.discipline == discipline
+
+
+def test_parse_events_logs_nothing_for_expected_events(caplog: pytest.LogCaptureFixture) -> None:
+    # GIVEN: a program event, a rental with no program and an event off the ice sheets
+    body = _page(
+        [_event("1", hteam_id=7), _event("2", event_type_id="r"), _event("3", resource_id=9)],
+        [_summary("1", "Stick & Puck"), _summary("2", "Rental"), *EVENT_TYPES, *PROGRAMS, _team(7, "20", "1")],
+    )
+    caplog.set_level(logging.DEBUG)
+
+    # WHEN: parsing the page
+    parse_events(body, RINK)
+
+    # THEN: nothing is logged
+    assert caplog.records == []
+
+
+@pytest.mark.parametrize(
+    ("event", "included", "message"),
+    [
+        (_event("1", hteam_id=7), [_summary("1", "Thing"), *EVENT_TYPES, *PROGRAMS], "daysmart_program_missing"),
+        (
+            _event("1", hteam_id=7),
+            [_summary("1", "Thing"), *EVENT_TYPES, *PROGRAMS, _team(7, sport_id="99", program_type_id="1")],
+            "daysmart_program_incomplete",
+        ),
+        (_event("1", event_type_id="zz"), [_summary("1", "Thing"), *EVENT_TYPES], "daysmart_event_type_missing"),
+        (_event("1", desc=" "), [_summary("1", ""), *EVENT_TYPES], "daysmart_event_untitled"),
+    ],
+)
+def test_parse_events_warns_on_unexpected_events(
+    caplog: pytest.LogCaptureFixture, event: dict[str, Any], included: list[dict[str, Any]], message: str
+) -> None:
+    # GIVEN: an event whose program, event type or name can't be resolved
+    caplog.set_level(logging.WARNING)
+
+    # WHEN: parsing the page
+    events = parse_events(_page([event], included), RINK)
+
+    # THEN: the event is kept and one warning names the rink and event
+    assert len(events) == 1
+    (record,) = caplog.records
+    assert (record.levelname, record.message, record.rink, record.event_id) == ("WARNING", message, "test", "1")
+
+
+def test_parse_events_skips_and_warns_on_malformed_events(caplog: pytest.LogCaptureFixture) -> None:
+    # GIVEN: an event missing its start time, next to a good one
+    malformed = _event("1")
+    del malformed["attributes"]["start"]
+    body = _page([malformed, _event("2")], [_summary("1", "Thing"), _summary("2", "Thing"), *EVENT_TYPES])
+    caplog.set_level(logging.WARNING)
+
+    # WHEN: parsing the page
+    events = parse_events(body, RINK)
+
+    # THEN: the malformed event is dropped with a warning and the good one is kept
+    assert [e.id for e in events] == ["2"]
+    (record,) = caplog.records
+    assert (record.message, record.rink, record.event_id) == ("daysmart_event_malformed", "test", "1")
+    assert "start" in record.error

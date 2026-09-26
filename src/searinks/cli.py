@@ -1,7 +1,8 @@
 import argparse
 from datetime import date, timedelta
 
-from searinks.disciplines import DISCIPLINE_KEYWORDS
+from searinks.disciplines import DISCIPLINES
+from searinks.logs import configure_logging
 from searinks.models.event import Event
 from searinks.rinks.registry import RINKS
 from searinks.schedule import get_all_schedules, get_schedule
@@ -25,8 +26,10 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--days", type=int, default=1, help="number of days to show")
     parser.add_argument("--search", help="case-insensitive title filter, e.g. 'stick'")
     parser.add_argument("--drop-in", action="store_true", help="only sessions sold per visit")
-    parser.add_argument("--sport", choices=sorted(DISCIPLINE_KEYWORDS), help="only this discipline")
+    parser.add_argument("--sport", choices=DISCIPLINES, help="only this discipline")
+    parser.add_argument("-v", "--verbose", action="store_true", help="log debug details to stderr")
     args = parser.parse_args(argv)
+    configure_logging(verbose=args.verbose)
 
     end = args.date + timedelta(days=args.days - 1)
     filters = {"search": args.search, "drop_in": args.drop_in, "sport": args.sport}

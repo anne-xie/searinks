@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -154,3 +155,52 @@ def test_parse_bookings_keeps_only_public_bookings_on_configured_venues(venue_id
 
     # THEN: only public bookings on configured venues survive
     assert (len(events) == 1) is kept
+
+
+def test_parse_bookings_logs_nothing_for_expected_bookings(caplog: pytest.LogCaptureFixture) -> None:
+    # GIVEN: an ordinary booking and a hidden one on another venue
+    body = [_booking(1), _booking(2, venue_id=99, hidden=True)]
+    caplog.set_level(logging.DEBUG)
+
+    # WHEN: parsing the bookings
+    parse_bookings(body, RINK)
+
+    # THEN: nothing is logged
+    assert caplog.records == []
+
+
+@pytest.mark.parametrize(
+    ("booking", "message"),
+    [
+        (_booking(1, venue_id=99), "rectimes_booking_unknown_venue"),
+        (_booking(1, group_name=" ", event_name=""), "rectimes_booking_untitled"),
+    ],
+)
+def test_parse_bookings_warns_on_unexpected_bookings(
+    caplog: pytest.LogCaptureFixture, booking: dict[str, Any], message: str
+) -> None:
+    # GIVEN: a public booking that is off the rink's venues or has no name
+    caplog.set_level(logging.WARNING)
+
+    # WHEN: parsing the bookings
+    parse_bookings([booking], RINK)
+
+    # THEN: one warning names the rink and booking
+    (record,) = caplog.records
+    assert (record.levelname, record.message, record.rink, record.booking_id) == ("WARNING", message, "test", 1)
+
+
+def test_parse_bookings_skips_and_warns_on_malformed_bookings(caplog: pytest.LogCaptureFixture) -> None:
+    # GIVEN: a booking missing its start time, next to a good one
+    malformed = _booking(1)
+    del malformed["startTimeLocal"]
+    caplog.set_level(logging.WARNING)
+
+    # WHEN: parsing the bookings
+    events = parse_bookings([malformed, _booking(2)], RINK)
+
+    # THEN: the malformed booking is dropped with a warning and the good one is kept
+    assert [e.id for e in events] == ["2"]
+    (record,) = caplog.records
+    assert (record.message, record.rink, record.booking_id) == ("rectimes_booking_malformed", "test", 1)
+    assert "startTimeLocal" in record.error
