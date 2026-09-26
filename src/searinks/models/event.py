@@ -9,26 +9,26 @@ class Event:
     """One scheduled block of ice time.
 
     Args:
-        id: DaySmart event id.
+        id: Event id within its source.
         title: Human-readable name, e.g. "Stick & Puck".
-        event_type: DaySmart event type name, e.g. "Camp" or "Rental".
         rink: Key of the rink the event is at.
         sheet: Ice sheet name.
         start: Timezone-aware start.
         end: Timezone-aware end.
-        open_slots: Remaining registration slots, if DaySmart reports them.
-        capacity: Total registration capacity, if DaySmart reports it.
+        event_type: Source's event type name, e.g. "Camp" or "Rental", if it has one.
+        open_slots: Remaining registration slots, if the source reports them.
+        capacity: Total registration capacity, if the source reports it.
         sport: Sport of the program the event belongs to, e.g. "Hockey".
         drop_in: Whether the event is sold per session rather than as a series.
     """
 
     id: str
     title: str
-    event_type: str
     rink: str
     sheet: str
     start: datetime
     end: datetime
+    event_type: str | None = None
     open_slots: int | None = None
     capacity: int | None = None
     sport: str | None = None

@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from searinks.daysmart.parse import parse_events
+from searinks.daysmart.source import DaySmartSource
 from searinks.models.event import Event
 from searinks.models.rink import Rink
 
@@ -13,10 +14,12 @@ PACIFIC = ZoneInfo("America/Los_Angeles")
 RINK = Rink(
     key="test",
     name="Test Rink",
-    company="testco",
     timezone="America/Los_Angeles",
-    sheets={1: "Sheet 1", 2: "Sheet 2"},
-    drop_in_program_types=frozenset({"Camp", "Drop-In"}),
+    source=DaySmartSource(
+        company="testco",
+        sheets={1: "Sheet 1", 2: "Sheet 2"},
+        drop_in_program_types=frozenset({"Camp", "Drop-In"}),
+    ),
 )
 
 PROGRAMS = [

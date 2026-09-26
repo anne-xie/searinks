@@ -13,7 +13,7 @@ def main(argv: list[str] | None = None) -> None:
     Args:
         argv: Command-line arguments; defaults to `sys.argv[1:]`.
     """
-    parser = argparse.ArgumentParser(prog="searinks", description="Ice rink schedules from DaySmart")
+    parser = argparse.ArgumentParser(prog="searinks", description="Seattle-area ice rink schedules")
     parser.add_argument(
         "rinks",
         nargs="*",

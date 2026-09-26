@@ -5,16 +5,15 @@ from unittest.mock import MagicMock, patch
 import httpx
 
 from searinks.daysmart.client import DaySmartClient
+from searinks.daysmart.source import DaySmartSource
 from searinks.models.event import Event
 from searinks.models.rink import Rink
 
 RINK = Rink(
     key="test",
     name="Test Rink",
-    company="testco",
     timezone="America/Los_Angeles",
-    sheets={1: "Sheet 1"},
-    drop_in_program_types=frozenset({"Camp"}),
+    source=DaySmartSource(company="testco", sheets={1: "Sheet 1"}, drop_in_program_types=frozenset({"Camp"})),
 )
 
 

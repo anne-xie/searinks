@@ -15,14 +15,15 @@ def parse_events(body: dict[str, Any], rink: Rink) -> list[Event]:
 
     Args:
         body: Decoded response body.
-        rink: Rink the page belongs to.
+        rink: Rink the page belongs to; its source must be a `DaySmartSource`.
     """
     tz = ZoneInfo(rink.timezone)
+    source = rink.source
     included: Included = {(i["type"], i["id"]): i for i in body.get("included", [])}
     events = []
     for raw in body["data"]:
         attrs = raw["attributes"]
-        sheet = rink.sheets.get(attrs["resource_id"])
+        sheet = source.sheets.get(attrs["resource_id"])
         if sheet is None or not attrs.get("publish"):
             continue
         summary = included.get(("event-summaries", raw["id"]), {}).get("attributes", {})
@@ -40,7 +41,7 @@ def parse_events(body: dict[str, Any], rink: Rink) -> list[Event]:
                 open_slots=summary.get("open_slots"),
                 capacity=summary.get("composite_capacity"),
                 sport=sport,
-                drop_in=program_type in rink.drop_in_program_types and sport not in NOT_DROP_IN_SPORTS,
+                drop_in=program_type in source.drop_in_program_types and sport not in NOT_DROP_IN_SPORTS,
             )
         )
     return events

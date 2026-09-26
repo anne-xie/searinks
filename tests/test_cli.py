@@ -112,7 +112,7 @@ def test_main_without_rinks_fetches_all_rinks(
     )
     get_schedule.assert_not_called()
     out = capsys.readouterr().out
-    assert out.startswith("Kraken Community Iceplex, Sno-King Ice Arenas\n")
+    assert out.startswith("Kraken Community Iceplex, Sno-King Ice Arenas, Olympic View Arena, Lynnwood Ice Center\n")
     assert "  11:15-12:15  Kraken Community Iceplex  Starbucks Rink 1" in out
 
 

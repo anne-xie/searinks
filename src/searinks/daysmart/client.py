@@ -15,7 +15,7 @@ class DaySmartClient:
     """Reads a rink's public schedule from the DaySmart Recreation JSON:API.
 
     Args:
-        rink: Rink to query.
+        rink: Rink to query; its source must be a `DaySmartSource`.
         http: HTTP client; injectable for tests.
     """
 
@@ -50,7 +50,7 @@ class DaySmartClient:
         response = self.http.get(
             f"{BASE_URL}/events",
             params={
-                "company": self.rink.company,
+                "company": self.rink.source.company,
                 "filter[start_date__gte]": start.isoformat(),
                 "filter[start_date__lte]": end.isoformat(),
                 "include": "eventType,summary,homeTeam.sport,homeTeam.programType",

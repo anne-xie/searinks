@@ -4,32 +4,35 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
+from searinks.daysmart.source import DaySmartSource
 from searinks.models.event import Event
 from searinks.models.rink import Rink
+from searinks.rectimes.source import RecTimesSource
 from searinks.rinks.registry import RINKS
 from searinks.schedule import get_all_schedules, get_schedule
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
 
 
-def _rink(key: str) -> Rink:
+def _rink(key: str, source: DaySmartSource | RecTimesSource | None = None) -> Rink:
     """Build a rink with one sheet.
 
     Args:
         key: Rink key, also used as the DaySmart company.
+        source: Schedule source; defaults to DaySmart.
     """
     return Rink(
         key=key,
         name=key.title(),
-        company=key,
         timezone="America/Los_Angeles",
-        sheets={1: "Sheet 1"},
-        drop_in_program_types=frozenset({"Camp"}),
+        source=source
+        or DaySmartSource(company=key, sheets={1: "Sheet 1"}, drop_in_program_types=frozenset({"Camp"})),
     )
 
 
 RINK_A = _rink("alpha")
 RINK_B = _rink("bravo")
+RINK_RECTIMES = _rink("charlie", RecTimesSource(facility="charlie", venues={1: "Sheet 1"}, drop_in_groups=frozenset()))
 
 
 def _event(
@@ -49,7 +52,6 @@ def _event(
     return Event(
         id=event_id,
         title=title,
-        event_type="Camp",
         rink=rink,
         sheet="Sheet 1",
         start=start,
@@ -83,6 +85,22 @@ def test_get_schedule_fetches_each_rink_for_the_date_range(client_cls: MagicMock
     assert sorted(c.args[0].key for c in client_cls.call_args_list) == ["alpha", "bravo"]
     assert client_cls.return_value.get_events.call_count == 2
     client_cls.return_value.get_events.assert_called_with(date(2026, 9, 26), date(2026, 9, 28))
+
+
+@patch("searinks.schedule.RecTimesClient")
+@patch("searinks.schedule.DaySmartClient")
+def test_get_schedule_picks_client_from_rink_source(daysmart_cls: MagicMock, rectimes_cls: MagicMock) -> None:
+    # GIVEN: a DaySmart rink and a RecTimes rink, each client serving one event
+    daysmart_cls.return_value.get_events.return_value = [_event("d", "DaySmart", rink="alpha")]
+    rectimes_cls.return_value.get_events.return_value = [_event("r", "RecTimes", rink="charlie")]
+
+    # WHEN: fetching both rinks
+    events = get_schedule([RINK_A, RINK_RECTIMES], date(2026, 9, 26), date(2026, 9, 26))
+
+    # THEN: each rink is fetched by the client matching its source
+    daysmart_cls.assert_called_once_with(RINK_A)
+    rectimes_cls.assert_called_once_with(RINK_RECTIMES)
+    assert sorted(e.id for e in events) == ["d", "r"]
 
 
 @patch("searinks.schedule.DaySmartClient")

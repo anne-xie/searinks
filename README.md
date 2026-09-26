@@ -1,6 +1,6 @@
 # searinks
 
-Ice rink schedules from DaySmart Recreation. Supports Kraken Community Iceplex (`kraken`) and Sno-King Ice Arenas (`snoking`: Kirkland, Renton, Snoqualmie).
+Seattle-area ice rink schedules. Supports Kraken Community Iceplex (`kraken`) and Sno-King Ice Arenas (`snoking`: Kirkland, Renton, Snoqualmie) via DaySmart Recreation, and Olympic View Arena (`ova`) and Lynnwood Ice Center (`lynnwood`) via RecTimes.
 
 ```bash
 uv run searinks kraken snoking --date 2026-09-26 --days 3 --drop-in --sport hockey

@@ -1,7 +1,7 @@
 [project]
 name = "searinks"
 version = "0.1.0"
-description = "Ice rink schedules from DaySmart Recreation"
+description = "Seattle-area ice rink schedules"
 readme = "README.md"
 authors = [
     { name = "Anne", email = "annexie1999@gmail.com" }
