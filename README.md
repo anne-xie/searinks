@@ -12,18 +12,24 @@ Works on phones and desktop. No sign-in needed.
 
 ## Data and refresh schedule
 
-A GitHub Action fetches every rink's schedule for the next 14 days from the rinks' booking systems, then redeploys the site with fresh data. It runs:
+Two GitHub Actions keep the site current while calling the rinks' booking systems as little as possible:
 
-- every 3 hours
-- on every push to `main`
-- on demand: **Actions → publish → Run workflow**, or `gh workflow run publish.yml --repo anne-xie/searinks`
+- **fetch-data** is the only one that calls them. It fetches every rink's schedule for the next 14 days and saves the result to the [`data` branch](https://github.com/anne-xie/searinks/tree/data). It runs:
+  - twice a week, Monday and Thursday mornings (about 6am Pacific)
+  - when a push to `main` changes the data sources (`src/searinks/`, e.g. adding a rink) or dependencies
+  - on demand: **Actions → fetch-data → Run workflow**, or `gh workflow run fetch-data.yml --repo anne-xie/searinks`
+- **deploy-site** rebuilds and publishes the site from the `data` branch without calling any APIs. It runs after every successful fetch-data run, when a push to `main` changes the site (`web/`), and on demand (`gh workflow run deploy-site.yml --repo anne-xie/searinks`).
 
-The site shows when its data was last updated. The latest data dump is published alongside the site as JSON:
+If one rink can't be fetched, its previous data stays in place until the next run. The site shows when its data was last updated.
 
-- `https://anne-xie.github.io/searinks/data/rinks.json`: rink list (name, area, coordinates, sheets)
-- `https://anne-xie.github.io/searinks/data/days/<YYYY-MM-DD>/<rink>.json`: one rink's sessions for one day, e.g. `days/2026-09-26/kraken.json`
+The latest data dump is JSON, on the `data` branch and alongside the site:
 
-> Not live yet: the Action is added in #21.
+- `rinks.json`: rink list (name, area, coordinates, sheets)
+- `days/<YYYY-MM-DD>/<rink>.json`: one rink's sessions for one day, e.g. `days/2026-09-26/kraken.json`
+
+On the site these live under `https://anne-xie.github.io/searinks/data/`.
+
+> Not live yet: both Actions are added in #21.
 
 To make a fresh dump locally instead, run `uv run searinks-export`. It writes the same files to `site/data/` (`--days N` changes the range, `--rink KEY` limits it to some rinks).
 
