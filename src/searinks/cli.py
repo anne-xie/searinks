@@ -1,9 +1,10 @@
 import argparse
 from datetime import date, timedelta
 
-from searinks.daysmart.client import DaySmartClient
+from searinks.disciplines import DISCIPLINE_KEYWORDS
 from searinks.models.event import Event
 from searinks.rinks.registry import RINKS
+from searinks.schedule import get_schedule
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -18,17 +19,18 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--days", type=int, default=1, help="number of days to show")
     parser.add_argument("--search", help="case-insensitive title filter, e.g. 'stick'")
     parser.add_argument("--drop-in", action="store_true", help="only sessions sold per visit")
-    parser.add_argument("--sport", choices=["hockey", "figure", "public"], help="only this discipline")
+    parser.add_argument("--sport", choices=sorted(DISCIPLINE_KEYWORDS), help="only this discipline")
     args = parser.parse_args(argv)
 
     rink = RINKS[args.rink]
-    events = DaySmartClient(rink).get_events(args.date, args.date + timedelta(days=args.days - 1))
-    if args.search:
-        events = [e for e in events if args.search.lower() in e.title.lower()]
-    if args.drop_in:
-        events = [e for e in events if e.drop_in]
-    if args.sport:
-        events = [e for e in events if e.discipline == args.sport]
+    events = get_schedule(
+        rink,
+        args.date,
+        args.date + timedelta(days=args.days - 1),
+        search=args.search,
+        drop_in=args.drop_in,
+        sport=args.sport,
+    )
 
     print(rink.name)
     current_day = None
