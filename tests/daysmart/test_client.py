@@ -42,7 +42,7 @@ def _event(title: str, hour: int) -> Event:
         hour: Start hour on 2026-09-26.
     """
     start = datetime(2026, 9, 26, hour)
-    return Event(id=title, title=title, event_type="Camp", sheet="Sheet 1", start=start, end=start)
+    return Event(id=title, title=title, event_type="Camp", rink="test", sheet="Sheet 1", start=start, end=start)
 
 
 @patch("searinks.daysmart.client.parse_events", return_value=[])

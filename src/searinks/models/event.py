@@ -12,6 +12,7 @@ class Event:
         id: DaySmart event id.
         title: Human-readable name, e.g. "Stick & Puck".
         event_type: DaySmart event type name, e.g. "Camp" or "Rental".
+        rink: Key of the rink the event is at.
         sheet: Ice sheet name.
         start: Timezone-aware start.
         end: Timezone-aware end.
@@ -24,6 +25,7 @@ class Event:
     id: str
     title: str
     event_type: str
+    rink: str
     sheet: str
     start: datetime
     end: datetime

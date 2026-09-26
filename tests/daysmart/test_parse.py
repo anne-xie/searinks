@@ -137,12 +137,13 @@ def test_parse_events_reads_event_fields() -> None:
     # WHEN: parsing the page
     events = parse_events(body, RINK)
 
-    # THEN: the event carries localized times, sheet name, type and capacity
+    # THEN: the event carries its rink, localized times, sheet name, type and capacity
     assert events == [
         Event(
             id="1",
             title="Public Skate Saturdays",
             event_type="Camp",
+            rink="test",
             sheet="Sheet 2",
             start=datetime(2026, 9, 26, 12, 45, tzinfo=PACIFIC),
             end=datetime(2026, 9, 26, 14, 15, tzinfo=PACIFIC),

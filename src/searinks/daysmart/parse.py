@@ -33,6 +33,7 @@ def parse_events(body: dict[str, Any], rink: Rink) -> list[Event]:
                 id=raw["id"],
                 title=(summary.get("name") or "").strip() or (attrs.get("desc") or "").strip(),
                 event_type=event_type.get("name", attrs["event_type_id"]),
+                rink=rink.key,
                 sheet=sheet,
                 start=datetime.fromisoformat(attrs["start"]).replace(tzinfo=tz),
                 end=datetime.fromisoformat(attrs["end"]).replace(tzinfo=tz),
