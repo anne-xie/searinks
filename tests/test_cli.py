@@ -62,12 +62,16 @@ def get_schedule() -> MagicMock:
         (["--drop-in", "--sport", "hockey"], {"search": None, "drop_in": True, "sport": "hockey"}),
     ],
 )
-def test_main_passes_rink_range_and_filters(get_schedule: MagicMock, args: list[str], expected_kwargs: dict) -> None:
+@patch("searinks.cli.filter_events", return_value=[])
+def test_main_fetches_rink_range_then_filters(
+    filter_events: MagicMock, get_schedule: MagicMock, args: list[str], expected_kwargs: dict
+) -> None:
     # WHEN: asking for 3 days starting on a date with the given flags
     main(["kraken", "--date", "2026-09-26", "--days", "3", *args])
 
-    # THEN: the schedule is fetched for the rink, the inclusive range and the filters
-    get_schedule.assert_called_once_with([KRAKEN], date(2026, 9, 26), date(2026, 9, 28), **expected_kwargs)
+    # THEN: the schedule is fetched for the rink and inclusive range, then narrowed by the flags
+    get_schedule.assert_called_once_with([KRAKEN], date(2026, 9, 26), date(2026, 9, 28))
+    filter_events.assert_called_once_with([EVENTS[0]], **expected_kwargs)
 
 
 def test_main_passes_every_requested_rink(get_schedule: MagicMock) -> None:
@@ -111,12 +115,10 @@ def test_main_without_rinks_fetches_all_rinks(
     get_all_schedules: MagicMock, get_schedule: MagicMock, capsys: pytest.CaptureFixture[str]
 ) -> None:
     # WHEN: no rinks are given
-    main(["--date", "2026-09-26", "--days", "2", "--drop-in"])
+    main(["--date", "2026-09-26", "--days", "2"])
 
-    # THEN: every rink is fetched with the range and filters, and the header lists every rink
-    get_all_schedules.assert_called_once_with(
-        date(2026, 9, 26), date(2026, 9, 27), search=None, drop_in=True, sport=None
-    )
+    # THEN: every rink is fetched for the range, and the header lists every rink
+    get_all_schedules.assert_called_once_with(date(2026, 9, 26), date(2026, 9, 27))
     get_schedule.assert_not_called()
     out = capsys.readouterr().out
     assert out.startswith(

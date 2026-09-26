@@ -2,6 +2,7 @@ import argparse
 from datetime import date, timedelta
 
 from searinks.disciplines import DISCIPLINES
+from searinks.filters import filter_events
 from searinks.logs import configure_logging
 from searinks.models.event import Event
 from searinks.rinks.registry import RINKS
@@ -32,13 +33,13 @@ def main(argv: list[str] | None = None) -> None:
     configure_logging(verbose=args.verbose)
 
     end = args.date + timedelta(days=args.days - 1)
-    filters = {"search": args.search, "drop_in": args.drop_in, "sport": args.sport}
     if args.rinks:
         rinks = [RINKS[key] for key in dict.fromkeys(args.rinks)]
-        events = get_schedule(rinks, args.date, end, **filters)
+        events = get_schedule(rinks, args.date, end)
     else:
         rinks = list(RINKS.values())
-        events = get_all_schedules(args.date, end, **filters)
+        events = get_all_schedules(args.date, end)
+    events = filter_events(events, search=args.search, drop_in=args.drop_in, sport=args.sport)
 
     names = {rink.key: rink.name for rink in rinks}
     rink_width = max(map(len, names.values())) if len(rinks) > 1 else 0

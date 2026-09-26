@@ -148,43 +148,20 @@ def test_get_schedule_logs_overrides_missing_from_results(
     rectimes_cls.return_value.get_events.return_value = [_event("s", "SJHA", "hockey", rink="delta")]
     caplog.set_level(logging.DEBUG)
 
-    # WHEN: fetching the rink with a filter that drops the matching event
-    get_schedule([rink], date(2026, 9, 26), date(2026, 9, 26), sport="figure")
+    # WHEN: fetching the rink
+    get_schedule([rink], date(2026, 9, 26), date(2026, 9, 26))
 
-    # THEN: only the override that matched nothing fetched is logged, at debug level
+    # THEN: only the override that matched nothing is logged, at debug level
     assert [(r.levelname, r.message, r.rink, r.title) for r in caplog.records] == [
         ("DEBUG", "discipline_override_unmatched", "delta", "OVHL")
     ]
 
 
-@pytest.mark.parametrize(
-    ("filters", "expected_ids"),
-    [
-        ({}, ["stick", "public", "freestyle", "game", "rental"]),
-        ({"search": "PUBLIC skate"}, ["public"]),
-        ({"search": "stick"}, ["stick", "game"]),
-        ({"drop_in": True}, ["stick", "public"]),
-        ({"sport": "hockey"}, ["stick", "game"]),
-        ({"sport": "figure"}, ["freestyle"]),
-        ({"drop_in": True, "sport": "hockey"}, ["stick"]),
-        ({"drop_in": True, "search": "stick"}, ["stick"]),
-    ],
-)
-def test_get_schedule_applies_filters(client_cls: MagicMock, filters: dict, expected_ids: list[str]) -> None:
-    # WHEN: fetching one rink with the given filters
-    events = get_schedule([RINK_A], date(2026, 9, 26), date(2026, 9, 26), **filters)
-
-    # THEN: only matching events are returned
-    assert sorted(e.id for e in events) == sorted(expected_ids)
-
-
 @patch("searinks.schedule.get_schedule", return_value=EVENTS)
-def test_get_all_schedules_queries_every_registered_rink_with_filters(get_schedule_mock: MagicMock) -> None:
-    # WHEN: fetching every rink with filters
-    events = get_all_schedules(date(2026, 9, 26), date(2026, 9, 27), search="stick", drop_in=True, sport="hockey")
+def test_get_all_schedules_queries_every_registered_rink(get_schedule_mock: MagicMock) -> None:
+    # WHEN: fetching every rink
+    events = get_all_schedules(date(2026, 9, 26), date(2026, 9, 27))
 
-    # THEN: get_schedule runs once over all registered rinks with the same range and filters
-    get_schedule_mock.assert_called_once_with(
-        list(RINKS.values()), date(2026, 9, 26), date(2026, 9, 27), search="stick", drop_in=True, sport="hockey"
-    )
+    # THEN: get_schedule runs once over all registered rinks with the same range
+    get_schedule_mock.assert_called_once_with(list(RINKS.values()), date(2026, 9, 26), date(2026, 9, 27))
     assert events == EVENTS
