@@ -1,3 +1,4 @@
+import logging
 from datetime import date, datetime
 from unittest.mock import MagicMock, patch
 from zoneinfo import ZoneInfo
@@ -123,6 +124,32 @@ def test_get_schedule_merges_rinks_sorted_by_start_then_rink(client_cls: MagicMo
 
     # THEN: results are merged and ordered by start time, ties broken by rink
     assert [e.id for e in events] == ["b8", "a9", "a12", "b12"]
+
+
+@patch("searinks.schedule.RecTimesClient")
+def test_get_schedule_logs_overrides_missing_from_results(
+    rectimes_cls: MagicMock, caplog: pytest.LogCaptureFixture
+) -> None:
+    # GIVEN: a rink overriding two titles, only one of which is on its schedule
+    rink = _rink(
+        "delta",
+        RecTimesSource(
+            facility="delta",
+            venues={1: "Sheet 1"},
+            drop_in_groups=frozenset(),
+            discipline_overrides={"SJHA": "hockey", "OVHL": "hockey"},
+        ),
+    )
+    rectimes_cls.return_value.get_events.return_value = [_event("s", "SJHA", "hockey", rink="delta")]
+    caplog.set_level(logging.DEBUG)
+
+    # WHEN: fetching the rink with a filter that drops the matching event
+    get_schedule([rink], date(2026, 9, 26), date(2026, 9, 26), sport="figure")
+
+    # THEN: only the override that matched nothing fetched is logged, at debug level
+    assert [(r.levelname, r.message, r.rink, r.title) for r in caplog.records] == [
+        ("DEBUG", "discipline_override_unmatched", "delta", "OVHL")
+    ]
 
 
 @pytest.mark.parametrize(

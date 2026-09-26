@@ -1,4 +1,6 @@
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
+
+DISCIPLINES = ("hockey", "figure", "public")
 
 DISCIPLINE_KEYWORDS = {
     "hockey": ("hockey", "puck"),
@@ -30,3 +32,27 @@ def discipline_for(sport: str | None, title: str, overrides: Mapping[str, str] |
         if any(k in name for k in keywords):
             return discipline
     return None
+
+
+def check_overrides(overrides: Mapping[str, str]) -> None:
+    """Raise if any override maps to something other than a known discipline.
+
+    Args:
+        overrides: Rink-specific exact title to discipline.
+
+    Raises:
+        ValueError: Listing each offending title and value.
+    """
+    unknown = {title: value for title, value in overrides.items() if value not in DISCIPLINES}
+    if unknown:
+        raise ValueError(f"unknown disciplines in overrides {unknown}; expected one of {DISCIPLINES}")
+
+
+def unmatched_overrides(overrides: Mapping[str, str], titles: Iterable[str]) -> list[str]:
+    """Return overridden titles that appear nowhere in `titles`, sorted.
+
+    Args:
+        overrides: Rink-specific exact title to discipline.
+        titles: Titles of the events fetched for the rink.
+    """
+    return sorted(set(overrides) - set(titles))

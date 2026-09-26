@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
@@ -5,11 +6,14 @@ from typing import Protocol
 
 from searinks.daysmart.client import DaySmartClient
 from searinks.daysmart.source import DaySmartSource
+from searinks.disciplines import unmatched_overrides
 from searinks.models.event import Event
 from searinks.models.rink import Rink
 from searinks.rectimes.client import RecTimesClient
 from searinks.rectimes.source import RecTimesSource
 from searinks.rinks.registry import RINKS
+
+logger = logging.getLogger(__name__)
 
 
 class ScheduleClient(Protocol):
@@ -38,6 +42,20 @@ def _client_for(rink: Rink) -> ScheduleClient:
             return RecTimesClient(rink)
 
 
+def _fetch(rink: Rink, start: date, end: date) -> list[Event]:
+    """Fetch one rink's events, logging overrides that matched none of them.
+
+    Args:
+        rink: Rink to fetch.
+        start: First day to include.
+        end: Last day to include (inclusive).
+    """
+    events = _client_for(rink).get_events(start, end)
+    for title in unmatched_overrides(rink.source.discipline_overrides, (e.title for e in events)):
+        logger.debug("discipline_override_unmatched", extra={"rink": rink.key, "title": title})
+    return events
+
+
 def get_schedule(
     rinks: Sequence[Rink],
     start: date,
@@ -61,7 +79,7 @@ def get_schedule(
         sport: Only keep events in this discipline ("hockey", "figure", "public").
     """
     with ThreadPoolExecutor(max_workers=max(len(rinks), 1)) as pool:
-        per_rink = pool.map(lambda rink: _client_for(rink).get_events(start, end), rinks)
+        per_rink = pool.map(lambda rink: _fetch(rink, start, end), rinks)
         events = [event for rink_events in per_rink for event in rink_events]
     if search:
         events = [e for e in events if search.lower() in e.title.lower()]

@@ -35,6 +35,13 @@ EVENTS = [
 ]
 
 
+@pytest.fixture(autouse=True)
+def configure_logging() -> MagicMock:
+    """Patch logging setup so CLI runs don't change log levels for other tests."""
+    with patch("searinks.cli.configure_logging") as mock:
+        yield mock
+
+
 @pytest.fixture
 def get_schedule() -> MagicMock:
     """Patch `get_schedule` as used by the CLI, returning `EVENTS` for the requested rinks."""
@@ -114,6 +121,17 @@ def test_main_without_rinks_fetches_all_rinks(
     out = capsys.readouterr().out
     assert out.startswith("Kraken Community Iceplex, Sno-King Ice Arenas, Olympic View Arena, Lynnwood Ice Center\n")
     assert "  11:15-12:15  Kraken Community Iceplex  Starbucks Rink 1" in out
+
+
+@pytest.mark.parametrize(("args", "verbose"), [([], False), (["--verbose"], True), (["-v"], True)])
+def test_main_configures_logging(
+    get_schedule: MagicMock, configure_logging: MagicMock, args: list[str], verbose: bool
+) -> None:
+    # WHEN: running with or without the verbose flag
+    main(["kraken", *args])
+
+    # THEN: logging is set up at the matching verbosity
+    configure_logging.assert_called_once_with(verbose=verbose)
 
 
 @pytest.mark.parametrize("args", [["nope"], ["kraken", "nope"], ["kraken", "--sport", "curling"]])
