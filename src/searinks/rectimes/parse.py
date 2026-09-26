@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from searinks.disciplines import discipline_for
 from searinks.models.event import Event
 from searinks.models.rink import Rink
 
@@ -24,15 +25,17 @@ def parse_bookings(body: list[dict[str, Any]], rink: Rink) -> list[Event]:
         if sheet is None or raw.get("hiddenFromPublic"):
             continue
         group = (raw.get("groupName") or "").strip()
+        title = (raw.get("eventName") or "").strip() or group
         events.append(
             Event(
                 id=str(raw["id"]),
-                title=(raw.get("eventName") or "").strip() or group,
+                title=title,
                 rink=rink.key,
                 sheet=sheet,
                 start=datetime.fromisoformat(raw["startTimeLocal"]).replace(tzinfo=tz),
                 end=datetime.fromisoformat(raw["endTimeLocal"]).replace(tzinfo=tz),
                 drop_in=group in source.drop_in_groups,
+                discipline=discipline_for(None, title, source.discipline_overrides),
             )
         )
     return events

@@ -9,5 +9,12 @@ LYNNWOOD = Rink(
         facility="ova",
         venues={1146: "Main Rink"},
         drop_in_groups=frozenset({"Stick & Puck", "Public Skate", "LIC Freestyle", "Adult Drop in"}),
+        discipline_overrides={
+            "SJHA": "hockey",
+            "Seattle Selects": "hockey",
+            "Arctic Foxes": "hockey",
+            "Spicy Kittens": "hockey",
+            "Theater on Ice": "figure",
+        },
     ),
 )

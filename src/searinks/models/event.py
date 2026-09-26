@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from searinks.disciplines import discipline_for
-
 
 @dataclass(frozen=True)
 class Event:
@@ -20,6 +18,8 @@ class Event:
         capacity: Total registration capacity, if the source reports it.
         sport: Sport of the program the event belongs to, e.g. "Hockey".
         drop_in: Whether the event is sold per session rather than as a series.
+        discipline: "hockey", "figure" or "public", resolved by the source's
+            parser; see `discipline_for`.
     """
 
     id: str
@@ -33,8 +33,4 @@ class Event:
     capacity: int | None = None
     sport: str | None = None
     drop_in: bool = False
-
-    @property
-    def discipline(self) -> str | None:
-        """Coarse grouping of `sport`; see `discipline_for`."""
-        return discipline_for(self.sport, self.title)
+    discipline: str | None = None

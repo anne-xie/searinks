@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
+from searinks.disciplines import discipline_for
 from searinks.models.event import Event
 from searinks.models.rink import Rink
 
@@ -29,10 +30,11 @@ def parse_events(body: dict[str, Any], rink: Rink) -> list[Event]:
         summary = included.get(("event-summaries", raw["id"]), {}).get("attributes", {})
         event_type = included.get(("event-types", attrs["event_type_id"]), {}).get("attributes", {})
         sport, program_type = _program(included, attrs.get("hteam_id"))
+        title = (summary.get("name") or "").strip() or (attrs.get("desc") or "").strip()
         events.append(
             Event(
                 id=raw["id"],
-                title=(summary.get("name") or "").strip() or (attrs.get("desc") or "").strip(),
+                title=title,
                 event_type=event_type.get("name", attrs["event_type_id"]),
                 rink=rink.key,
                 sheet=sheet,
@@ -42,6 +44,7 @@ def parse_events(body: dict[str, Any], rink: Rink) -> list[Event]:
                 capacity=summary.get("composite_capacity"),
                 sport=sport,
                 drop_in=program_type in source.drop_in_program_types and sport not in NOT_DROP_IN_SPORTS,
+                discipline=discipline_for(sport, title, source.discipline_overrides),
             )
         )
     return events

@@ -9,5 +9,6 @@ OVA = Rink(
         facility="ova",
         venues={1145: "Main Rink"},
         drop_in_groups=frozenset({"OVA Freestyle", "OVA Lunch Hockey", "Friday Night Skates"}),
+        discipline_overrides={"SJHA": "hockey", "OVHL": "hockey", "Seattle Selects": "hockey", "SSC": "figure"},
     ),
 )
