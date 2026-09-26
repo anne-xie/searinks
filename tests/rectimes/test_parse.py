@@ -19,6 +19,7 @@ RINK = Rink(
         facility="testfac",
         venues={10: "Main Rink", 11: "Studio"},
         drop_in_groups=frozenset({"Stick & Puck"}),
+        discipline_overrides={"SJHA": "hockey"},
     ),
 )
 
@@ -63,7 +64,7 @@ def test_parse_bookings_reads_booking_fields() -> None:
     # WHEN: parsing the bookings
     events = parse_bookings(body, RINK)
 
-    # THEN: the event carries its rink, venue sheet name and localized times, with no type or sport
+    # THEN: the event carries its rink, venue sheet name, localized times and discipline, with no type or sport
     assert events == [
         Event(
             id="7",
@@ -73,6 +74,7 @@ def test_parse_bookings_reads_booking_fields() -> None:
             start=datetime(2026, 9, 26, 12, 45, tzinfo=PACIFIC),
             end=datetime(2026, 9, 26, 14, 15, tzinfo=PACIFIC),
             drop_in=True,
+            discipline="hockey",
         )
     ]
 
@@ -94,6 +96,25 @@ def test_parse_bookings_title_prefers_event_name_then_group(group_name: str, eve
 
     # THEN: the title falls back from event name to group name
     assert parsed.title == expected
+
+
+@pytest.mark.parametrize(
+    ("group_name", "discipline"),
+    [
+        ("SJHA", "hockey"),
+        ("OVA Freestyle", "figure"),
+        ("Arctic Foxes", None),
+    ],
+)
+def test_parse_bookings_resolves_discipline_with_rink_overrides(group_name: str, discipline: str | None) -> None:
+    # GIVEN: a booking by the given group at a rink that overrides "SJHA"
+    body = [_booking(1, group_name=group_name)]
+
+    # WHEN: parsing the bookings
+    (parsed,) = parse_bookings(body, RINK)
+
+    # THEN: the rink's override applies, and other titles fall back to the shared keywords
+    assert parsed.discipline == discipline
 
 
 @pytest.mark.parametrize(

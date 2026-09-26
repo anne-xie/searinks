@@ -36,14 +36,19 @@ RINK_RECTIMES = _rink("charlie", RecTimesSource(facility="charlie", venues={1: "
 
 
 def _event(
-    event_id: str, title: str, sport: str | None = None, drop_in: bool = False, rink: str = "alpha", hour: int = 12
+    event_id: str,
+    title: str,
+    discipline: str | None = None,
+    drop_in: bool = False,
+    rink: str = "alpha",
+    hour: int = 12,
 ) -> Event:
     """Build an event on Sheet 1.
 
     Args:
         event_id: Event id.
         title: Event title.
-        sport: Program sport name.
+        discipline: Resolved discipline.
         drop_in: Whether the event is sold per session.
         rink: Key of the rink the event belongs to.
         hour: Start hour on 2026-09-26.
@@ -56,16 +61,17 @@ def _event(
         sheet="Sheet 1",
         start=start,
         end=start,
-        sport=sport,
         drop_in=drop_in,
+        discipline=discipline,
     )
 
 
 EVENTS = [
-    _event("stick", "Stick & Puck", "Hockey", drop_in=True),
-    _event("public", "Public Skate Saturdays", "Public Skate", drop_in=True),
-    _event("freestyle", "Open Freestyle | Pre-Paid", "Open Freestyle"),
-    _event("game", "Seattle Slapshots vs Seal Team Sticks", "Hockey"),
+    _event("stick", "Stick & Puck", "hockey", drop_in=True),
+    _event("public", "Public Skate Saturdays", "public", drop_in=True),
+    _event("freestyle", "Open Freestyle | Pre-Paid", "figure"),
+    _event("game", "Seattle Slapshots vs Seal Team Sticks", "hockey"),
+    _event("rental", "Birthday Party"),
 ]
 
 
@@ -122,7 +128,7 @@ def test_get_schedule_merges_rinks_sorted_by_start_then_rink(client_cls: MagicMo
 @pytest.mark.parametrize(
     ("filters", "expected_ids"),
     [
-        ({}, ["stick", "public", "freestyle", "game"]),
+        ({}, ["stick", "public", "freestyle", "game", "rental"]),
         ({"search": "PUBLIC skate"}, ["public"]),
         ({"search": "stick"}, ["stick", "game"]),
         ({"drop_in": True}, ["stick", "public"]),

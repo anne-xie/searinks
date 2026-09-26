@@ -19,6 +19,7 @@ RINK = Rink(
         company="testco",
         sheets={1: "Sheet 1", 2: "Sheet 2"},
         drop_in_program_types=frozenset({"Camp", "Drop-In"}),
+        discipline_overrides={"UW Club Hockey 26-27": "figure", "SAS 26-27": "hockey"},
     ),
 )
 
@@ -140,7 +141,7 @@ def test_parse_events_reads_event_fields() -> None:
     # WHEN: parsing the page
     events = parse_events(body, RINK)
 
-    # THEN: the event carries its rink, localized times, sheet name, type and capacity
+    # THEN: the event carries its rink, localized times, sheet name, type, capacity and discipline
     assert events == [
         Event(
             id="1",
@@ -152,6 +153,7 @@ def test_parse_events_reads_event_fields() -> None:
             end=datetime(2026, 9, 26, 14, 15, tzinfo=PACIFIC),
             open_slots=296,
             capacity=300,
+            discipline="public",
         )
     ]
 
@@ -218,3 +220,23 @@ def test_parse_events_keeps_only_published_events_on_ice_sheets(resource_id: int
 
     # THEN: only published events on configured sheets survive
     assert (len(events) == 1) is kept
+
+
+@pytest.mark.parametrize(
+    ("desc", "discipline"),
+    [
+        ("SAS 26-27", "hockey"),
+        ("UW Club Hockey 26-27", "figure"),
+        ("Aspire Freestyle", "figure"),
+        ("Birthday Party", None),
+    ],
+)
+def test_parse_events_resolves_discipline_with_rink_overrides(desc: str, discipline: str | None) -> None:
+    # GIVEN: an event with no program at a rink that overrides two titles, one against its keywords
+    body = _page([_event("1", desc=desc)], [_summary("1", ""), *EVENT_TYPES])
+
+    # WHEN: parsing the page
+    (parsed,) = parse_events(body, RINK)
+
+    # THEN: the rink's override applies, and other titles fall back to the shared keywords
+    assert parsed.discipline == discipline
