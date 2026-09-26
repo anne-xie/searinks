@@ -17,8 +17,14 @@ from searinks.disciplines import discipline_for
         ("Ice Skating", "LTS Practice", None),
         ("Learn to Skate", "FIT Skate", None),
         (None, "Seattle Slapshots vs Seal Team Sticks", None),
+        (None, "Kraken Hockey League", "hockey"),
+        (None, "Stick & Puck", "hockey"),
+        (None, "SJHA STICK & PUCK", "hockey"),
+        (None, "OVA Freestyle", "figure"),
+        (None, "Theater on Ice", None),
+        (None, "Public Skate", "public"),
     ],
 )
 def test_discipline_for_groups_sport_names(sport: str | None, title: str, expected: str | None) -> None:
-    # WHEN/THEN: DaySmart sport names (and public skate titles) map to a coarse discipline
+    # WHEN/THEN: sport names (or the title, when there is no sport) map to a coarse discipline
     assert discipline_for(sport, title) == expected
