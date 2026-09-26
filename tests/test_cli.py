@@ -7,6 +7,7 @@ import pytest
 from searinks.cli import main
 from searinks.models.event import Event
 from searinks.rinks.kraken import KRAKEN
+from searinks.rinks.snoking import SNOKING
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
 
@@ -15,6 +16,7 @@ EVENTS = [
         id="1",
         title="Stick & Puck",
         event_type="Camp",
+        rink="kraken",
         sheet="Starbucks Rink 1",
         start=datetime(2026, 9, 26, 11, 15, tzinfo=PACIFIC),
         end=datetime(2026, 9, 26, 12, 15, tzinfo=PACIFIC),
@@ -25,7 +27,8 @@ EVENTS = [
         id="2",
         title="Public Skate",
         event_type="Camp",
-        sheet="VMFH Rink 3",
+        rink="snoking",
+        sheet="Renton Large",
         start=datetime(2026, 9, 27, 12, 45, tzinfo=PACIFIC),
         end=datetime(2026, 9, 27, 14, 15, tzinfo=PACIFIC),
     ),
@@ -34,8 +37,13 @@ EVENTS = [
 
 @pytest.fixture
 def get_schedule() -> MagicMock:
-    """Patch `get_schedule` as used by the CLI."""
-    with patch("searinks.cli.get_schedule", return_value=EVENTS) as mock:
+    """Patch `get_schedule` as used by the CLI, returning `EVENTS` for the requested rinks."""
+
+    def fake(rinks: list, *args: object, **kwargs: object) -> list[Event]:
+        keys = {rink.key for rink in rinks}
+        return [e for e in EVENTS if e.rink in keys]
+
+    with patch("searinks.cli.get_schedule", side_effect=fake) as mock:
         yield mock
 
 
@@ -52,23 +60,63 @@ def test_main_passes_rink_range_and_filters(get_schedule: MagicMock, args: list[
     main(["kraken", "--date", "2026-09-26", "--days", "3", *args])
 
     # THEN: the schedule is fetched for the rink, the inclusive range and the filters
-    get_schedule.assert_called_once_with(KRAKEN, date(2026, 9, 26), date(2026, 9, 28), **expected_kwargs)
+    get_schedule.assert_called_once_with([KRAKEN], date(2026, 9, 26), date(2026, 9, 28), **expected_kwargs)
 
 
-def test_main_prints_events_grouped_by_day(get_schedule: MagicMock, capsys: pytest.CaptureFixture[str]) -> None:
-    # WHEN: listing the schedule
+def test_main_passes_every_requested_rink(get_schedule: MagicMock) -> None:
+    # WHEN: asking for two rinks
+    main(["kraken", "snoking", "--date", "2026-09-26"])
+
+    # THEN: both rinks are fetched together
+    assert get_schedule.call_args.args[0] == [KRAKEN, SNOKING]
+
+
+def test_main_prints_single_rink_without_rink_column(
+    get_schedule: MagicMock, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # WHEN: listing one rink's schedule
     main(["kraken", "--date", "2026-09-26", "--days", "2"])
 
     # THEN: events print under their day with time, sheet, title and open slots
     out = capsys.readouterr().out
-    assert "Kraken Community Iceplex" in out
-    assert "Sat Sep 26" in out
-    assert "11:15-12:15  Starbucks Rink 1    Stick & Puck  (15/34 open)" in out
-    assert "Sun Sep 27" in out
-    assert "12:45-14:15  VMFH Rink 3         Public Skate\n" in out
+    assert out == "Kraken Community Iceplex\n\nSat Sep 26\n  11:15-12:15  Starbucks Rink 1    Stick & Puck  (15/34 open)\n"
 
 
-@pytest.mark.parametrize("args", [["nope"], ["kraken", "--sport", "curling"]])
+def test_main_prints_rink_column_for_multiple_rinks(
+    get_schedule: MagicMock, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # WHEN: listing two rinks
+    main(["kraken", "snoking", "--date", "2026-09-26", "--days", "2"])
+
+    # THEN: the header names both rinks, events group by day and each row says which rink it's at
+    out = capsys.readouterr().out
+    assert out == (
+        "Kraken Community Iceplex, Sno-King Ice Arenas\n"
+        "\nSat Sep 26\n"
+        "  11:15-12:15  Kraken Community Iceplex  Starbucks Rink 1    Stick & Puck  (15/34 open)\n"
+        "\nSun Sep 27\n"
+        "  12:45-14:15  Sno-King Ice Arenas       Renton Large        Public Skate\n"
+    )
+
+
+@patch("searinks.cli.get_all_schedules", return_value=EVENTS)
+def test_main_without_rinks_fetches_all_rinks(
+    get_all_schedules: MagicMock, get_schedule: MagicMock, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # WHEN: no rinks are given
+    main(["--date", "2026-09-26", "--days", "2", "--drop-in"])
+
+    # THEN: every rink is fetched with the range and filters, and the header lists every rink
+    get_all_schedules.assert_called_once_with(
+        date(2026, 9, 26), date(2026, 9, 27), search=None, drop_in=True, sport=None
+    )
+    get_schedule.assert_not_called()
+    out = capsys.readouterr().out
+    assert out.startswith("Kraken Community Iceplex, Sno-King Ice Arenas\n")
+    assert "  11:15-12:15  Kraken Community Iceplex  Starbucks Rink 1" in out
+
+
+@pytest.mark.parametrize("args", [["nope"], ["kraken", "nope"], ["kraken", "--sport", "curling"]])
 def test_main_rejects_invalid_arguments(get_schedule: MagicMock, args: list[str]) -> None:
     # WHEN/THEN: an unknown rink or sport exits with an argparse error
     with pytest.raises(SystemExit):
