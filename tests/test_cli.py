@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from searinks.cli import main
-from searinks.daysmart import Event
+from searinks.models import Event
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
 

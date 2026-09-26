@@ -1,7 +1,8 @@
 import argparse
 from datetime import date, timedelta
 
-from searinks.daysmart import DaySmartClient, Event
+from searinks.daysmart import DaySmartClient
+from searinks.models import Event
 from searinks.rinks import RINKS
 
 
