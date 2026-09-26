@@ -16,6 +16,7 @@ RINK = Rink(
     company="testco",
     timezone="America/Los_Angeles",
     sheets={1: "Sheet 1", 2: "Sheet 2"},
+    drop_in_program_types=frozenset({"Camp", "Drop-In"}),
 )
 
 
@@ -102,6 +103,8 @@ PROGRAMS = [
     {"type": "sports", "id": "40", "attributes": {"name": "Private Lessons"}},
     {"type": "program-types", "id": "1", "attributes": {"name": "Camp"}},
     {"type": "program-types", "id": "2", "attributes": {"name": "Class"}},
+    {"type": "program-types", "id": "3", "attributes": {"name": "Drop-In"}},
+    {"type": "program-types", "id": "4", "attributes": {"name": "Per-session Class"}},
 ]
 
 EVENT_TYPES = [
@@ -186,6 +189,8 @@ def test_get_events_parses_event_fields() -> None:
         (_team(7, sport_id="20", program_type_id="1"), "Hockey", True),
         (_team(7, sport_id="31", program_type_id="2"), "Open Freestyle", False),
         (_team(7, sport_id="40", program_type_id="1"), "Private Lessons", False),
+        (_team(7, sport_id="20", program_type_id="3"), "Hockey", True),
+        (_team(7, sport_id="20", program_type_id="4"), "Hockey", False),
         (None, None, False),
     ],
 )
@@ -199,27 +204,30 @@ def test_get_events_reads_sport_and_drop_in_from_program(
     # WHEN: fetching events
     (event,) = client.get_events(date(2026, 9, 26), date(2026, 9, 26))
 
-    # THEN: sport comes from the program and only per-session Camp programs count as drop-in
+    # THEN: sport comes from the program and only the rink's drop-in program types count
     assert event.sport == sport
     assert event.drop_in is drop_in
 
 
 @pytest.mark.parametrize(
-    ("sport", "expected"),
+    ("sport", "title", "expected"),
     [
-        ("Hockey", "hockey"),
-        ("Open Freestyle", "figure"),
-        ("FS Club Freestyle", "figure"),
-        ("FS Group Classes", "figure"),
-        ("Ice Dance", "figure"),
-        ("Public Skate", "public"),
-        ("Learn to Skate", None),
-        (None, None),
+        ("Hockey", "Stick N Puck", "hockey"),
+        ("Open Freestyle", "Open Freestyle | Drop-in", "figure"),
+        ("FS Club Freestyle", "Aspire Freestyle", "figure"),
+        ("FS Group Classes", "On-Ice Class: Edge", "figure"),
+        ("Figure Skating", "Freestyle", "figure"),
+        ("Ice Dance", "Ice Dance & Testing", "figure"),
+        ("Public Skate", "Public Skate Saturdays", "public"),
+        ("Ice Skating", "Public Skate", "public"),
+        ("Ice Skating", "LTS Practice", None),
+        ("Learn to Skate", "FIT Skate", None),
+        (None, "Seattle Slapshots vs Seal Team Sticks", None),
     ],
 )
-def test_discipline_for_groups_sport_names(sport: str | None, expected: str | None) -> None:
-    # WHEN/THEN: DaySmart sport names map to a coarse discipline
-    assert discipline_for(sport) == expected
+def test_discipline_for_groups_sport_names(sport: str | None, title: str, expected: str | None) -> None:
+    # WHEN/THEN: DaySmart sport names (and public skate titles) map to a coarse discipline
+    assert discipline_for(sport, title) == expected
 
 
 @pytest.mark.parametrize(
@@ -284,3 +292,13 @@ def test_kraken_rink_is_registered() -> None:
     # THEN: it points at the kraken DaySmart tenant and its three NHL sheets
     assert rink.company == "kraken"
     assert set(rink.sheets) == {1, 2, 3}
+
+
+def test_snoking_rink_is_registered() -> None:
+    # GIVEN/WHEN: looking up Sno-King
+    rink = RINKS["snoking"]
+
+    # THEN: it covers all five sheets across Kirkland, Renton and Snoqualmie
+    assert rink.company == "snoking"
+    assert set(rink.sheets) == {1, 11, 12, 13, 14}
+    assert rink.drop_in_program_types == {"Drop-In"}

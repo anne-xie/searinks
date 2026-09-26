@@ -10,7 +10,6 @@ from searinks.rinks import Rink
 BASE_URL = "https://apps.daysmartrecreation.com/dash/jsonapi/api/v1"
 PAGE_SIZE = 200
 
-DROP_IN_PROGRAM_TYPE = "Camp"
 NOT_DROP_IN_SPORTS = {"Private Lessons"}
 DISCIPLINE_KEYWORDS = {
     "hockey": ("hockey",),
@@ -19,15 +18,19 @@ DISCIPLINE_KEYWORDS = {
 }
 
 
-def discipline_for(sport: str | None) -> str | None:
-    """Group a DaySmart sport name into "hockey", "figure" or "public".
+def discipline_for(sport: str | None, title: str) -> str | None:
+    """Group an event into "hockey", "figure" or "public".
 
     Args:
         sport: Sport name as configured by the rink, e.g. "Open Freestyle".
+        title: Event title; used to spot public skates at rinks that file
+            them under a generic sport like "Ice Skating".
 
     Returns:
-        The discipline, or None when the sport doesn't clearly belong to one.
+        The discipline, or None when the event doesn't clearly belong to one.
     """
+    if sport and "public skate" in title.lower():
+        return "public"
     name = f"{sport or ''} ".lower()
     for discipline, keywords in DISCIPLINE_KEYWORDS.items():
         if any(k in name for k in keywords):
@@ -66,7 +69,7 @@ class Event:
     @property
     def discipline(self) -> str | None:
         """Coarse grouping of `sport`; see `discipline_for`."""
-        return discipline_for(self.sport)
+        return discipline_for(self.sport, self.title)
 
 
 class DaySmartClient:
@@ -147,7 +150,7 @@ class DaySmartClient:
                     open_slots=summary.get("open_slots"),
                     capacity=summary.get("composite_capacity"),
                     sport=sport,
-                    drop_in=program_type == DROP_IN_PROGRAM_TYPE and sport not in NOT_DROP_IN_SPORTS,
+                    drop_in=program_type in self.rink.drop_in_program_types and sport not in NOT_DROP_IN_SPORTS,
                 )
             )
         return events
