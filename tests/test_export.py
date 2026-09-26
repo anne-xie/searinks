@@ -1,13 +1,16 @@
 import json
+import logging
 from datetime import date, datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from zoneinfo import ZoneInfo
 
+import httpx
 import pytest
 
 from searinks.export import day_payloads, main, rinks_payload
 from searinks.models.event import Event
+from searinks.models.rink import Rink
 from searinks.rinks.kraken import KRAKEN
 from searinks.rinks.registry import RINKS
 
@@ -47,19 +50,67 @@ def configure_logging() -> MagicMock:
 
 
 @pytest.fixture
-def get_all_schedules() -> MagicMock:
-    """Patch `get_all_schedules` as used by the export, returning `EVENT` and `LATER_EVENT`."""
-    with patch("searinks.export.get_all_schedules", return_value=[EVENT, LATER_EVENT]) as mock:
+def get_schedule() -> MagicMock:
+    """Patch `get_schedule` as used by the export: Kraken serves `EVENT` and `LATER_EVENT`, other rinks nothing."""
+
+    def fake(rinks: list[Rink], start: date, end: date) -> list[Event]:
+        return [EVENT, LATER_EVENT] if rinks == [KRAKEN] else []
+
+    with patch("searinks.export.get_schedule", side_effect=fake) as mock:
         yield mock
 
 
 def _event_ids(path: Path) -> list[str]:
-    """Read the event ids from an exported day file.
+    """Read the event ids from an exported rink-day file.
 
     Args:
-        path: Day file to read.
+        path: Rink-day file to read.
     """
     return [e["id"] for e in json.loads(path.read_text())["events"]]
+
+
+def _written(out: Path) -> list[str]:
+    """List exported rink-day files as `<date>/<rink>.json`.
+
+    Args:
+        out: Export output directory.
+    """
+    return sorted(str(p.relative_to(out / "days")) for p in (out / "days").glob("*/*.json"))
+
+
+def _fail(get_schedule: MagicMock, errors: dict[str, Exception]) -> None:
+    """Make the patched `get_schedule` raise for some rinks and serve the rest as before.
+
+    Args:
+        get_schedule: The patched `get_schedule` fixture.
+        errors: Rink key to the exception fetching it raises.
+    """
+    serve = get_schedule.side_effect
+
+    def fake(rinks: list[Rink], start: date, end: date) -> list[Event]:
+        if error := errors.get(rinks[0].key):
+            raise error
+        return serve(rinks, start, end)
+
+    get_schedule.side_effect = fake
+
+
+def _exit_code(out: Path) -> int:
+    """Export one day and return the command's exit status.
+
+    Args:
+        out: Export output directory.
+    """
+    try:
+        main(["--date", "2026-09-26", "--days", "1", "--out-dir", str(out)])
+    except SystemExit as exc:
+        return exc.code
+    return 0
+
+
+API_DOWN = httpx.ConnectError("connection refused")
+NOT_JSON = json.JSONDecodeError("Expecting value", "<html>", 0)
+OUR_BUG = KeyError("attributes")
 
 
 def test_rinks_payload_serializes_display_metadata() -> None:
@@ -85,13 +136,14 @@ def test_rinks_payload_serializes_display_metadata() -> None:
 
 
 def test_day_payloads_serializes_every_event_field() -> None:
-    # WHEN: building the payload for a single day with one event
-    payloads = day_payloads([EVENT], date(2026, 9, 26), date(2026, 9, 26), GENERATED_AT)
+    # WHEN: building one rink's payload for a single day with one event
+    payloads = day_payloads([EVENT], "kraken", date(2026, 9, 26), date(2026, 9, 26), GENERATED_AT)
 
-    # THEN: the day's file has its date, timestamp and every event field with ISO times
+    # THEN: the file has its date, rink, timestamp and every event field with ISO times
     assert payloads == {
         date(2026, 9, 26): {
             "date": "2026-09-26",
+            "rink": "kraken",
             "generated_at": "2026-09-26T08:00:00-07:00",
             "events": [
                 {
@@ -113,61 +165,122 @@ def test_day_payloads_serializes_every_event_field() -> None:
     }
 
 
-def test_day_payloads_groups_by_start_day_and_keeps_empty_days() -> None:
-    # GIVEN: events on the first and third day, the later one running past midnight
-    events = [EVENT, LATER_EVENT]
+@pytest.mark.parametrize(
+    ("end", "expected"),
+    [
+        (
+            date(2026, 9, 29),
+            {date(2026, 9, 26): ["1"], date(2026, 9, 27): [], date(2026, 9, 28): ["2"], date(2026, 9, 29): []},
+        ),
+        (date(2026, 9, 27), {date(2026, 9, 26): ["1"], date(2026, 9, 27): []}),
+    ],
+)
+def test_day_payloads_groups_by_start_day_within_range(end: date, expected: dict[date, list[str]]) -> None:
+    # WHEN: building payloads for events on the 26th and on the 28th running past midnight
+    payloads = day_payloads([EVENT, LATER_EVENT], "kraken", date(2026, 9, 26), end, GENERATED_AT)
 
-    # WHEN: building payloads for a four-day range
-    payloads = day_payloads(events, date(2026, 9, 26), date(2026, 9, 29), GENERATED_AT)
-
-    # THEN: every day in the range gets a payload, events land on the day they start
-    assert {day: [e["id"] for e in p["events"]] for day, p in payloads.items()} == {
-        date(2026, 9, 26): ["1"],
-        date(2026, 9, 27): [],
-        date(2026, 9, 28): ["2"],
-        date(2026, 9, 29): [],
-    }
-
-
-def test_day_payloads_drops_events_outside_range() -> None:
-    # WHEN: building payloads for a range that excludes the later event
-    payloads = day_payloads([EVENT, LATER_EVENT], date(2026, 9, 26), date(2026, 9, 27), GENERATED_AT)
-
-    # THEN: only in-range days and events are present
-    assert {day: [e["id"] for e in p["events"]] for day, p in payloads.items()} == {
-        date(2026, 9, 26): ["1"],
-        date(2026, 9, 27): [],
-    }
+    # THEN: every day in range gets a payload, events land on their start day and out-of-range ones are dropped
+    assert {day: [e["id"] for e in p["events"]] for day, p in payloads.items()} == expected
 
 
-def test_main_fetches_inclusive_range_unfiltered(get_all_schedules: MagicMock, tmp_path: Path) -> None:
+def test_main_fetches_each_rink_separately_for_inclusive_range(get_schedule: MagicMock, tmp_path: Path) -> None:
     # WHEN: exporting 14 days from a date
     main(["--date", "2026-09-26", "--days", "14", "--out-dir", str(tmp_path)])
 
-    # THEN: every rink is fetched for the inclusive range with no filters
-    get_all_schedules.assert_called_once_with(date(2026, 9, 26), date(2026, 10, 9))
+    # THEN: every rink is fetched on its own for the inclusive range
+    assert sorted(c.args[0][0].key for c in get_schedule.call_args_list) == sorted(RINKS)
+    assert {c.args[1:] for c in get_schedule.call_args_list} == {(date(2026, 9, 26), date(2026, 10, 9))}
 
 
-def test_main_writes_rinks_and_one_file_per_day(get_all_schedules: MagicMock, tmp_path: Path) -> None:
+def test_main_writes_rinks_and_one_file_per_rink_per_day(get_schedule: MagicMock, tmp_path: Path) -> None:
     # GIVEN: an output directory that doesn't exist yet
     out = tmp_path / "site" / "data"
 
-    # WHEN: exporting three days
-    main(["--date", "2026-09-26", "--days", "3", "--out-dir", str(out)])
+    # WHEN: exporting two days
+    main(["--date", "2026-09-26", "--days", "2", "--out-dir", str(out)])
 
-    # THEN: rinks.json lists every rink and each day's file holds that day's events
+    # THEN: rinks.json lists every rink and each rink gets a file per day, empty or not
     assert len(json.loads((out / "rinks.json").read_text())["rinks"]) == len(RINKS)
-    assert sorted(p.name for p in (out / "days").iterdir()) == ["2026-09-26.json", "2026-09-27.json", "2026-09-28.json"]
-    assert [_event_ids(out / "days" / f"2026-09-{d}.json") for d in (26, 27, 28)] == [["1"], [], ["2"]]
+    assert _written(out) == sorted(f"2026-09-{d}/{key}.json" for d in (26, 27) for key in RINKS)
+    assert _event_ids(out / "days" / "2026-09-26" / "kraken.json") == ["1"]
+    assert _event_ids(out / "days" / "2026-09-27" / "kraken.json") == []
 
 
-def test_main_leaves_days_outside_range_untouched(get_all_schedules: MagicMock, tmp_path: Path) -> None:
+def test_main_only_exports_requested_rinks(get_schedule: MagicMock, tmp_path: Path) -> None:
+    # WHEN: refreshing just Kraken for one day
+    main(["--rink", "kraken", "--date", "2026-09-26", "--days", "1", "--out-dir", str(tmp_path)])
+
+    # THEN: only Kraken is fetched and written
+    get_schedule.assert_called_once_with([KRAKEN], date(2026, 9, 26), date(2026, 9, 26))
+    assert _written(tmp_path) == ["2026-09-26/kraken.json"]
+
+
+def test_main_leaves_files_outside_range_untouched(get_schedule: MagicMock, tmp_path: Path) -> None:
     # GIVEN: a previously exported day outside the range being refreshed
-    (tmp_path / "days").mkdir()
-    (tmp_path / "days" / "2026-09-25.json").write_text("previous")
+    previous = tmp_path / "days" / "2026-09-25" / "kraken.json"
+    previous.parent.mkdir(parents=True)
+    previous.write_text("previous")
 
     # WHEN: refreshing a single later day
     main(["--date", "2026-09-26", "--days", "1", "--out-dir", str(tmp_path)])
 
     # THEN: the earlier day's file is left as it was
-    assert (tmp_path / "days" / "2026-09-25.json").read_text() == "previous"
+    assert previous.read_text() == "previous"
+
+
+@pytest.mark.parametrize(
+    ("error", "event", "expected_code", "expected_counts"),
+    [
+        (API_DOWN, "rink_upstream_failed", 0, (len(RINKS) - 1, 1, 0)),
+        (NOT_JSON, "rink_upstream_failed", 0, (len(RINKS) - 1, 1, 0)),
+        (OUR_BUG, "rink_export_failed", 1, (len(RINKS) - 1, 0, 1)),
+    ],
+)
+def test_main_keeps_exporting_when_a_rink_fails(
+    get_schedule: MagicMock,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+    error: Exception,
+    event: str,
+    expected_code: int,
+    expected_counts: tuple[int, int, int],
+) -> None:
+    # GIVEN: fetching Renton raises and Renton has a previous export for the day
+    _fail(get_schedule, {"renton": error})
+    previous = tmp_path / "days" / "2026-09-26" / "renton.json"
+    previous.parent.mkdir(parents=True)
+    previous.write_text("previous")
+    caplog.set_level(logging.INFO)
+
+    # WHEN: exporting one day
+    code = _exit_code(tmp_path)
+
+    # THEN: other rinks are written, Renton's previous file is kept and the failure is classified
+    assert _written(tmp_path) == sorted(f"2026-09-26/{key}.json" for key in RINKS)
+    assert previous.read_text() == "previous"
+    assert [(r.levelname, r.rink) for r in caplog.records if r.message == event] == [("ERROR", "renton")]
+    finished = next(r for r in caplog.records if r.message == "export_finished")
+    assert (finished.succeeded, finished.upstream_failed, finished.internal_failed) == expected_counts
+    assert code == expected_code
+
+
+@pytest.mark.parametrize(
+    ("errors", "expected_code"),
+    [
+        ({key: API_DOWN for key in RINKS}, 2),
+        ({key: NOT_JSON if key == "ova" else API_DOWN for key in RINKS}, 2),
+        ({key: OUR_BUG if key == "ova" else API_DOWN for key in RINKS}, 1),
+        ({key: OUR_BUG for key in RINKS}, 1),
+    ],
+)
+def test_main_exit_code_separates_api_outage_from_our_errors(
+    get_schedule: MagicMock, tmp_path: Path, errors: dict[str, Exception], expected_code: int
+) -> None:
+    # GIVEN: every rink fails, from the API, from our side, or a mix
+    _fail(get_schedule, errors)
+
+    # WHEN: exporting one day
+    code = _exit_code(tmp_path)
+
+    # THEN: an all-API outage exits 2, and any error on our side exits 1
+    assert code == expected_code
