@@ -12,6 +12,11 @@ from searinks.rectimes.source import RecTimesSource
 RINK = Rink(
     key="test",
     name="Test Rink",
+    short_name="Test",
+    code="TST",
+    area="Seattle",
+    lat=47.6,
+    lng=-122.3,
     timezone="America/Los_Angeles",
     source=RecTimesSource(facility="testfac", venues={10: "Main Rink", 11: "Studio"}, drop_in_groups=frozenset()),
 )

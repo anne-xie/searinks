@@ -12,6 +12,11 @@ from searinks.models.rink import Rink
 RINK = Rink(
     key="test",
     name="Test Rink",
+    short_name="Test",
+    code="TST",
+    area="Seattle",
+    lat=47.6,
+    lng=-122.3,
     timezone="America/Los_Angeles",
     source=DaySmartSource(company="testco", sheets={1: "Sheet 1"}, drop_in_program_types=frozenset({"Camp"})),
 )

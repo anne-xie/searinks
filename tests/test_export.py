@@ -49,10 +49,21 @@ def test_to_payload_serializes_events_and_rinks() -> None:
     # WHEN: building the payload for one event at one rink
     payload = to_payload([EVENT], [KRAKEN], generated_at)
 
-    # THEN: timestamps are ISO strings and every event field is kept
+    # THEN: timestamps are ISO strings, every event field is kept and rinks carry display metadata
     assert payload == {
         "generated_at": "2026-09-26T08:00:00-07:00",
-        "rinks": [{"key": "kraken", "name": KRAKEN.name}],
+        "rinks": [
+            {
+                "key": "kraken",
+                "name": "Kraken Community Iceplex",
+                "short_name": "Kraken",
+                "code": "KCI",
+                "area": "Northgate",
+                "lat": 47.7063,
+                "lng": -122.3252,
+                "sheets": ["Starbucks Rink 1", "Smartsheet Rink 2", "VMFH Rink 3"],
+            }
+        ],
         "events": [
             {
                 "id": "1",

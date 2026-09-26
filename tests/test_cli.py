@@ -7,7 +7,7 @@ import pytest
 from searinks.cli import main
 from searinks.models.event import Event
 from searinks.rinks.kraken import KRAKEN
-from searinks.rinks.snoking import SNOKING
+from searinks.rinks.renton import RENTON
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
 
@@ -27,7 +27,7 @@ EVENTS = [
         id="2",
         title="Public Skate",
         event_type="Camp",
-        rink="snoking",
+        rink="renton",
         sheet="Renton Large",
         start=datetime(2026, 9, 27, 12, 45, tzinfo=PACIFIC),
         end=datetime(2026, 9, 27, 14, 15, tzinfo=PACIFIC),
@@ -72,10 +72,10 @@ def test_main_passes_rink_range_and_filters(get_schedule: MagicMock, args: list[
 
 def test_main_passes_every_requested_rink(get_schedule: MagicMock) -> None:
     # WHEN: asking for two rinks
-    main(["kraken", "snoking", "--date", "2026-09-26"])
+    main(["kraken", "renton", "--date", "2026-09-26"])
 
     # THEN: both rinks are fetched together
-    assert get_schedule.call_args.args[0] == [KRAKEN, SNOKING]
+    assert get_schedule.call_args.args[0] == [KRAKEN, RENTON]
 
 
 def test_main_prints_single_rink_without_rink_column(
@@ -93,16 +93,16 @@ def test_main_prints_rink_column_for_multiple_rinks(
     get_schedule: MagicMock, capsys: pytest.CaptureFixture[str]
 ) -> None:
     # WHEN: listing two rinks
-    main(["kraken", "snoking", "--date", "2026-09-26", "--days", "2"])
+    main(["kraken", "renton", "--date", "2026-09-26", "--days", "2"])
 
     # THEN: the header names both rinks, events group by day and each row says which rink it's at
     out = capsys.readouterr().out
     assert out == (
-        "Kraken Community Iceplex, Sno-King Ice Arenas\n"
+        "Kraken Community Iceplex, Sno-King Renton\n"
         "\nSat Sep 26\n"
         "  11:15-12:15  Kraken Community Iceplex  Starbucks Rink 1    Stick & Puck  (15/34 open)\n"
         "\nSun Sep 27\n"
-        "  12:45-14:15  Sno-King Ice Arenas       Renton Large        Public Skate\n"
+        "  12:45-14:15  Sno-King Renton           Renton Large        Public Skate\n"
     )
 
 
@@ -119,7 +119,10 @@ def test_main_without_rinks_fetches_all_rinks(
     )
     get_schedule.assert_not_called()
     out = capsys.readouterr().out
-    assert out.startswith("Kraken Community Iceplex, Sno-King Ice Arenas, Olympic View Arena, Lynnwood Ice Center\n")
+    assert out.startswith(
+        "Kraken Community Iceplex, Sno-King Kirkland, Sno-King Renton, Sno-King Snoqualmie, "
+        "Olympic View Arena, Lynnwood Ice Center\n"
+    )
     assert "  11:15-12:15  Kraken Community Iceplex  Starbucks Rink 1" in out
 
 

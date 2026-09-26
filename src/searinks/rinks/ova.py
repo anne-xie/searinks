@@ -4,6 +4,11 @@ from searinks.rectimes.source import RecTimesSource
 OVA = Rink(
     key="ova",
     name="Olympic View Arena",
+    short_name="Olympic View",
+    code="OVA",
+    area="Mountlake Terrace",
+    lat=47.7971,
+    lng=-122.3284,
     timezone="America/Los_Angeles",
     source=RecTimesSource(
         facility="ova",

@@ -21,7 +21,7 @@ def to_payload(events: Sequence[Event], rinks: Sequence[Rink], generated_at: dat
 
     Args:
         events: Events to include, already sorted.
-        rinks: Rinks to list, for display names.
+        rinks: Rinks to list with their display metadata.
         generated_at: When the data was fetched.
     """
 
@@ -33,9 +33,26 @@ def to_payload(events: Sequence[Event], rinks: Sequence[Rink], generated_at: dat
         """
         return asdict(event) | {"start": event.start.isoformat(), "end": event.end.isoformat()}
 
+    def rink_dict(rink: Rink) -> dict:
+        """Serialize one rink's display metadata, leaving out its schedule source.
+
+        Args:
+            rink: Rink to serialize.
+        """
+        return {
+            "key": rink.key,
+            "name": rink.name,
+            "short_name": rink.short_name,
+            "code": rink.code,
+            "area": rink.area,
+            "lat": rink.lat,
+            "lng": rink.lng,
+            "sheets": rink.sheets,
+        }
+
     return {
         "generated_at": generated_at.isoformat(),
-        "rinks": [{"key": rink.key, "name": rink.name} for rink in rinks],
+        "rinks": [rink_dict(rink) for rink in rinks],
         "events": [event_dict(event) for event in events],
     }
 

@@ -25,6 +25,11 @@ def _rink(key: str, source: DaySmartSource | RecTimesSource | None = None) -> Ri
     return Rink(
         key=key,
         name=key.title(),
+        short_name=key.title(),
+        code=key[:3].upper(),
+        area="Seattle",
+        lat=47.6,
+        lng=-122.3,
         timezone="America/Los_Angeles",
         source=source
         or DaySmartSource(company=key, sheets={1: "Sheet 1"}, drop_in_program_types=frozenset({"Camp"})),
