@@ -13,3 +13,14 @@ Omit the rinks to query all of them.
 - `--sport hockey|figure|public` only that discipline
 
 Tests: `uv run pytest`
+
+## Web
+
+A static site in `web/` (Vite + Preact) reads the JSON that `searinks-export` writes to `site/data/`.
+
+```bash
+uv run searinks-export --days 2
+cd web && npm install && npm run dev
+```
+
+`npm run build` writes `web/dist/` (data included) for https://anne-xie.github.io/searinks/. Tests: `npm test`

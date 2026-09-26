@@ -1,0 +1,127 @@
+/* D2 design tokens; see docs/mocks/phone/README.md and docs/mocks/web/README.md. */
+:root {
+  --font-display: "Baloo 2", "DM Sans", sans-serif;
+  --font-body: "DM Sans", "Helvetica Neue", sans-serif;
+  --ink: #12284a;
+  --muted: #56677d;
+  --accent: #1f4fcc;
+  --bg: #f4f9fd;
+  --band: #e4effb;
+  --divider: #dce8f3;
+  --chip: #e7eff7;
+  --surface: #ffffff;
+  --hockey-bg: #dce7ff;
+  --hockey-ink: #1b3fa8;
+  --figure-bg: #f1e2ff;
+  --figure-ink: #5b2a91;
+  --public-bg: #d6f4f1;
+  --public-ink: #0b5c57;
+  --nearly-full: #a34a0b;
+  --now-line: #e5484d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+
+a { color: inherit; }
+
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+.main { flex-grow: 1; width: 100%; max-width: 1440px; margin: 0 auto; }
+
+.logo { display: flex; align-items: center; gap: 8px; color: var(--accent); text-decoration: none; }
+.wordmark { font-family: var(--font-display); font-weight: 700; font-size: 24px; color: var(--ink); }
+
+/* Phone header: band, gear, pill tabs. */
+.header-phone {
+  background: var(--band);
+  border-radius: 0 0 22px 22px;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.header-phone-row { display: flex; align-items: center; justify-content: space-between; }
+.gear {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.pills { display: flex; gap: 4px; padding: 3px; background: var(--surface); border-radius: 20px; }
+.pill {
+  flex-grow: 1;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 17px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+}
+.pill[aria-current="page"] { background: var(--accent); color: var(--surface); }
+
+/* Desktop header: white top bar with text links and a Preferences button. */
+.header-desktop {
+  display: none;
+  height: 64px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--divider);
+  padding: 0 32px;
+  align-items: center;
+  gap: 48px;
+}
+.links { display: flex; gap: 28px; flex-grow: 1; }
+.link {
+  height: 64px;
+  padding: 3px 4px 0;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+.link[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+.prefs-button {
+  height: 40px;
+  padding: 0 14px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--divider);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+.prefs-button[aria-current="page"] { color: var(--accent); border-color: var(--accent); }
+
+@media (min-width: 1024px) {
+  .header-phone { display: none; }
+  .header-desktop { display: flex; }
+  .placeholder, .notice { padding: 24px 32px; }
+}
+
+.placeholder { padding: 18px 20px; }
+.placeholder h1 { margin: 0 0 4px; font-family: var(--font-display); font-weight: 700; font-size: 26px; }
+.placeholder p { margin: 0; color: var(--muted); font-size: 14px; }
+.rink-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.rink-list li { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-top: 1px solid var(--divider); }
+.rink-name { font-weight: 700; font-size: 15px; }
+.muted { color: var(--muted); font-size: 12px; }
+
+.notice { padding: 18px 20px; color: var(--muted); }
+.updated { padding: 16px 20px; text-align: center; color: var(--muted); font-size: 12px; }
