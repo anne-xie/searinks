@@ -7,6 +7,7 @@ Source canvas: https://claude.ai/artifact/VsbPzaAqoaoC8YgT4qfUgd ("Desktop web m
 | Screen | File | Tickets |
 |--------|------|---------|
 | Schedule: list and grid side by side | [schedule.html](schedule.html) | #12, #13 |
+| Schedule with the date picker open | [schedule-date-picker.html](schedule-date-picker.html) | #12, #13 |
 | Map and starred rinks | [map.html](map.html) | #14 |
 | Preferences (dialog) | [preferences.html](preferences.html) | #15 |
 | Preferences with the starred rinks panel expanded | [preferences-rinks.html](preferences-rinks.html) | #14, #15 |
@@ -36,4 +37,4 @@ Same as the phone mocks. Extra desktop values:
 
 - The dimmed page behind the Preferences dialog is the older list + map Schedule layout, not the current one.
 - Renton's grid columns are empty; the sample data only has Kraken and Kirkland sessions.
-- The open date-picker state is on the canvas ("D3" in the Date picker ideas row) but not exported here; its page content predates the final Schedule layout.
+- The date picker's per-day session counts are placeholders except Sat 26 and Sun 27, and it assumes schedules are posted through Oct 9.
