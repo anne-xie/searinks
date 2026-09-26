@@ -1,9 +1,9 @@
 import argparse
 from datetime import date, timedelta
 
-from searinks.daysmart import DaySmartClient
-from searinks.models import Event
-from searinks.rinks import RINKS
+from searinks.daysmart.client import DaySmartClient
+from searinks.models.event import Event
+from searinks.rinks.registry import RINKS
 
 
 def main(argv: list[str] | None = None) -> None:

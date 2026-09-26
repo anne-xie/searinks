@@ -1,4 +1,4 @@
-from searinks.models import Rink
+from searinks.models.rink import Rink
 
 KRAKEN = Rink(
     key="kraken",

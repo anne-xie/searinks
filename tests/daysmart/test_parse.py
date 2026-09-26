@@ -5,7 +5,8 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from searinks.daysmart.parse import parse_events
-from searinks.models import Event, Rink
+from searinks.models.event import Event
+from searinks.models.rink import Rink
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
 

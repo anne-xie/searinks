@@ -4,8 +4,9 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 
-from searinks.daysmart import DaySmartClient
-from searinks.models import Event, Rink
+from searinks.daysmart.client import DaySmartClient
+from searinks.models.event import Event
+from searinks.models.rink import Rink
 
 RINK = Rink(
     key="test",

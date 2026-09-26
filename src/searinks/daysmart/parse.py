@@ -2,7 +2,8 @@ from datetime import datetime
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from searinks.models import Event, Rink
+from searinks.models.event import Event
+from searinks.models.rink import Rink
 
 NOT_DROP_IN_SPORTS = {"Private Lessons"}
 

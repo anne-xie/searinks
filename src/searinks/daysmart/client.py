@@ -4,7 +4,8 @@ from typing import Any
 import httpx
 
 from searinks.daysmart.parse import parse_events
-from searinks.models import Event, Rink
+from searinks.models.event import Event
+from searinks.models.rink import Rink
 
 BASE_URL = "https://apps.daysmartrecreation.com/dash/jsonapi/api/v1"
 PAGE_SIZE = 200
