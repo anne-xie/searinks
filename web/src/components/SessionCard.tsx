@@ -1,5 +1,6 @@
 import type { JSX } from "preact";
 
+import { Chip } from "@/components/Chip";
 import type { Event, Rink } from "@/data";
 import { capacity, formatTime, rinkLine } from "@/schedule";
 import "@/components/SessionCard.css";
@@ -24,7 +25,7 @@ export function SessionCard({ event, rink }: { event: Event; rink: Rink }): JSX.
         <div class="card-title">{event.title}</div>
         <div class="card-where">{rinkLine(event, rink)}</div>
         <div class="card-meta">
-          {event.discipline && <span class={`tag tag-${event.discipline}`}>{SPORT_LABELS[event.discipline]}</span>}
+          {event.discipline && <Chip label={SPORT_LABELS[event.discipline]} discipline={event.discipline} />}
           {cap && (
             <span class={cap.state === "nearly" ? "capacity-nearly" : undefined}>
               {cap.taken}/{cap.total}

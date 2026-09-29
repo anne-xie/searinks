@@ -16,6 +16,9 @@
   --figure-ink: #5b2a91;
   --public-bg: #d6f4f1;
   --public-ink: #0b5c57;
+  /* Selected chip with no discipline, e.g. Drop-in. */
+  --selected-bg: #dce7ff;
+  --selected-ink: #1b3fa8;
   --nearly-full: #a34a0b;
   --now-line: #e5484d;
 }

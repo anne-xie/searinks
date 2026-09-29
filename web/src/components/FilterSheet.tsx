@@ -2,6 +2,7 @@ import type { JSX } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 
 import { Button } from "@/components/Button";
+import { Chip } from "@/components/Chip";
 import type { Rink } from "@/data";
 import type { Preferences } from "@/preferences";
 import type { Discipline } from "@/schedule";
@@ -91,15 +92,13 @@ export function FilterSheet({
           <legend class="sheet-label">Sports</legend>
           <div class="chips">
             {SPORTS.map((sport) => (
-              <button
+              <Chip
                 key={sport.key}
-                type="button"
-                class="chip-toggle"
-                aria-pressed={filters.sports.includes(sport.key)}
-                onClick={() => onChange((f) => ({ ...f, sports: toggle(f.sports, sport.key) }))}
-              >
-                {sport.label}
-              </button>
+                label={sport.label}
+                discipline={sport.key}
+                pressed={filters.sports.includes(sport.key)}
+                onToggle={() => onChange((f) => ({ ...f, sports: toggle(f.sports, sport.key) }))}
+              />
             ))}
           </div>
         </fieldset>

@@ -1,0 +1,21 @@
+.chip {
+  --chip-bg: var(--selected-bg);
+  --chip-ink: var(--selected-ink);
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--chip-ink);
+  font-weight: 700;
+}
+.chip-hockey { --chip-bg: var(--hockey-bg); --chip-ink: var(--hockey-ink); }
+.chip-figure { --chip-bg: var(--figure-bg); --chip-ink: var(--figure-ink); }
+.chip-public { --chip-bg: var(--public-bg); --chip-ink: var(--public-ink); }
+
+.chip-static { height: 18px; padding: 0 7px; font-size: 11px; }
+
+.chip-removable { height: 28px; padding: 0 2px 0 10px; gap: 2px; font-size: 12px; }
+.chip-remove { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+
+.chip-toggle { height: 32px; padding: 0 12px; font-size: 13px; }
+.chip-toggle[aria-pressed="false"] { background: var(--chip); color: var(--ink); }

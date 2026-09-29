@@ -2,13 +2,14 @@ import type { JSX } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 import { Button } from "@/components/Button";
+import { Chip } from "@/components/Chip";
 import { DateStrip } from "@/components/DateStrip";
 import { SPORTS, FilterSheet } from "@/components/FilterSheet";
-import { CloseIcon, FilterIcon, PinIcon } from "@/components/icons";
+import { FilterIcon, PinIcon } from "@/components/icons";
 import { SessionCard } from "@/components/SessionCard";
 import type { Rink } from "@/data";
 import { DEFAULT_PREFERENCES, type Preferences } from "@/preferences";
-import { dayHeading, dayMessage, filterEvents, rinksLabel, todayPacific, weekDates } from "@/schedule";
+import { type Discipline, dayHeading, dayMessage, filterEvents, rinksLabel, todayPacific, weekDates } from "@/schedule";
 import { type LoadedDay, useDays } from "@/useDays";
 import "@/views/ScheduleView.css";
 
@@ -62,10 +63,11 @@ export function ScheduleView({
   };
 
   const byKey = new Map(rinks.map((r) => [r.key, r]));
-  const chips = [
+  const chips: { label: string; discipline?: Discipline; remove: () => void }[] = [
     ...(filters.dropIn ? [{ label: "Drop-in", remove: () => setFilters((f) => ({ ...f, dropIn: false })) }] : []),
     ...SPORTS.filter((s) => filters.sports.includes(s.key)).map((s) => ({
       label: s.label,
+      discipline: s.key,
       remove: () => setFilters((f) => ({ ...f, sports: f.sports.filter((k) => k !== s.key) })),
     })),
   ];
@@ -86,12 +88,13 @@ export function ScheduleView({
           {chips.length > 0 && <span class="filter-badge">{chips.length}</span>}
         </Button>
         {chips.map((chip) => (
-          <span key={chip.label} class="chip">
-            {chip.label}
-            <Button class="chip-remove" aria-label={`Remove ${chip.label} filter`} onClick={chip.remove}>
-              <CloseIcon />
-            </Button>
-          </span>
+          <Chip
+            key={chip.label}
+            label={chip.label}
+            discipline={chip.discipline}
+            onRemove={chip.remove}
+            removeLabel={`Remove ${chip.label} filter`}
+          />
         ))}
       </div>
 

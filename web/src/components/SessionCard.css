@@ -17,8 +17,3 @@
 .card-meta { display: flex; align-items: center; gap: 6px; }
 .card-status { flex-shrink: 0; width: 58px; text-align: center; font-family: var(--font-display); font-weight: 600; font-size: 14px; color: var(--muted); }
 .capacity-nearly { color: var(--nearly-full); font-weight: 800; }
-
-.tag { display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 9px; font-weight: 700; font-size: 11px; }
-.tag-hockey { background: var(--hockey-bg); color: var(--hockey-ink); }
-.tag-figure { background: var(--figure-bg); color: var(--figure-ink); }
-.tag-public { background: var(--public-bg); color: var(--public-ink); }

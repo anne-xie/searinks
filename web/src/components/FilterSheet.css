@@ -17,19 +17,6 @@
 .sheet-label { padding: 0; margin-bottom: 8px; font-weight: 700; font-size: 14px; }
 .sheet-row .sheet-label { margin: 0; }
 .chips { display: flex; gap: 6px; }
-.chip-toggle {
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 16px;
-  border: none;
-  background: var(--chip);
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-}
-.chip-toggle[aria-pressed="true"] { background: var(--hockey-bg); color: var(--hockey-ink); }
 .sheet-check { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 14px; cursor: pointer; }
 .sheet-check input { width: 18px; height: 18px; accent-color: var(--accent); }
 .sheet-hint { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
@@ -65,7 +52,7 @@
 }
 .switch:checked { background: var(--accent); }
 .switch:checked::after { transform: translateX(20px); }
-.switch:focus-visible, .chip-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 @media (min-width: 1024px) {
   .sheet { margin: auto; border-radius: 22px; }
