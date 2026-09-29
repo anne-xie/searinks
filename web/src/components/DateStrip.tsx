@@ -1,5 +1,6 @@
 import type { JSX } from "preact";
 
+import { Button } from "@/components/Button";
 import { stripLabel } from "@/schedule";
 import "@/components/DateStrip.css";
 
@@ -23,9 +24,8 @@ export function DateStrip({
       {dates.map((date) => {
         const [weekday, day] = stripLabel(date);
         return (
-          <button
+          <Button
             key={date}
-            type="button"
             class="strip-day"
             aria-label={`Jump to ${weekday} ${day}`}
             aria-current={date === selected ? "date" : undefined}
@@ -33,7 +33,7 @@ export function DateStrip({
           >
             <span class="strip-weekday">{weekday}</span>
             <span class="strip-number">{day}</span>
-          </button>
+          </Button>
         );
       })}
     </div>

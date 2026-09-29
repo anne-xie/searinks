@@ -8,13 +8,11 @@
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  border: none;
   background: var(--chip);
   color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
 }
 .filter-badge {
   position: absolute;
@@ -46,14 +44,9 @@
 .chip-remove {
   width: 24px;
   height: 24px;
-  border: none;
-  background: none;
-  color: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  padding: 0;
 }
 
 .showing { display: flex; align-items: center; gap: 5px; padding: 8px 20px 0; font-size: 12px; color: var(--muted); }
@@ -62,13 +55,7 @@
 .showing-change {
   min-height: 28px;
   padding: 0 4px;
-  border: none;
-  background: none;
-  color: var(--accent);
-  font-family: var(--font-body);
-  font-weight: 700;
   font-size: 12px;
-  cursor: pointer;
 }
 
 .day-heading { margin: 0; padding: 16px 20px 8px; font-family: var(--font-display); font-weight: 700; font-size: 19px; }

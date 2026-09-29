@@ -2,15 +2,11 @@
 .strip-day {
   flex: 1 1 0;
   height: 64px;
-  border: none;
-  background: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  cursor: pointer;
-  font-family: var(--font-body);
   color: var(--muted);
 }
 .strip-weekday { font-size: 12px; font-weight: 500; }
@@ -26,4 +22,3 @@
   color: var(--ink);
 }
 .strip-day[aria-current="date"] .strip-number { background: var(--accent); color: var(--surface); }
-.strip-day:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 
+import { Button } from "@/components/Button";
 import { DateStrip } from "@/components/DateStrip";
 import { SPORTS, FilterSheet } from "@/components/FilterSheet";
 import { CloseIcon, FilterIcon, PinIcon } from "@/components/icons";
@@ -76,21 +77,20 @@ export function ScheduleView({
       </div>
 
       <div class="filter-row">
-        <button
-          type="button"
+        <Button
           class="filter-button"
           aria-label={`Filters, ${chips.length} selected`}
           onClick={() => setSheetOpen(true)}
         >
           <FilterIcon />
           {chips.length > 0 && <span class="filter-badge">{chips.length}</span>}
-        </button>
+        </Button>
         {chips.map((chip) => (
           <span key={chip.label} class="chip">
             {chip.label}
-            <button type="button" class="chip-remove" aria-label={`Remove ${chip.label} filter`} onClick={chip.remove}>
+            <Button class="chip-remove" aria-label={`Remove ${chip.label} filter`} onClick={chip.remove}>
               <CloseIcon />
-            </button>
+            </Button>
           </span>
         ))}
       </div>
@@ -102,9 +102,9 @@ export function ScheduleView({
         <span>
           Showing <strong>{rinksLabel(rinks, filters.rinks)}</strong>
         </span>
-        <button type="button" class="showing-change" onClick={() => setSheetOpen(true)}>
+        <Button variant="text" class="showing-change" onClick={() => setSheetOpen(true)}>
           Change
-        </button>
+        </Button>
       </div>
 
       {error ? (

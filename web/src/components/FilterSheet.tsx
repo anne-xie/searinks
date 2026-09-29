@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 import { useEffect, useRef } from "preact/hooks";
 
+import { Button } from "@/components/Button";
 import type { Rink } from "@/data";
 import type { Preferences } from "@/preferences";
 import type { Discipline } from "@/schedule";
@@ -118,9 +119,9 @@ export function FilterSheet({
           <p class="sheet-hint">None checked shows every rink.</p>
         </fieldset>
 
-        <button type="button" class="sheet-done" onClick={close}>
+        <Button variant="primary" class="sheet-done" onClick={close}>
           Done
-        </button>
+        </Button>
       </div>
     </dialog>
   );
