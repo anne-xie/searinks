@@ -9,7 +9,7 @@ export type Preferences = {
 
 // Hardcoded until preferences are stored in the browser (#15).
 export const DEFAULT_PREFERENCES: Preferences = {
-  rinks: ["kraken", "kirkland"],
-  sports: ["hockey"],
+  rinks: [],
+  sports: ["figure", "public"],
   dropIn: true,
 };
