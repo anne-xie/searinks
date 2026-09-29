@@ -20,8 +20,8 @@ a { color: inherit; }
 
 .placeholder { padding: 18px 20px; }
 .placeholder h1 { margin: 0 0 4px; font-family: var(--font-display); font-weight: 700; font-size: 26px; }
-.placeholder p { margin: 0; color: var(--muted); font-size: 14px; }
-.muted { color: var(--muted); font-size: 12px; }
+.placeholder p { margin: 0; color: var(--muted); font-size: var(--text-base); }
+.muted { color: var(--muted); font-size: var(--text-sm); }
 
 .notice { padding: 18px 20px; color: var(--muted); }
-.updated { padding: 16px 20px; text-align: center; color: var(--muted); font-size: 12px; }
+.updated { padding: 16px 20px; text-align: center; color: var(--muted); font-size: var(--text-sm); }

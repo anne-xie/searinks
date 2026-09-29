@@ -2,6 +2,14 @@
 :root {
   --font-display: "Baloo 2", "DM Sans", sans-serif;
   --font-body: "DM Sans", "Helvetica Neue", sans-serif;
+  /* Body type scale; one-off heading sizes stay with their headings. */
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-base: 14px;
+  --text-lg: 15px;
+  --text-xl: 16px;
   --ink: #12284a;
   --muted: #56677d;
   --accent: #1f4fcc;

@@ -12,10 +12,10 @@
 .chip-figure { --chip-bg: var(--figure-bg); --chip-ink: var(--figure-ink); }
 .chip-public { --chip-bg: var(--public-bg); --chip-ink: var(--public-ink); }
 
-.chip-static { height: 18px; padding: 0 7px; font-size: 11px; }
+.chip-static { height: 18px; padding: 0 7px; font-size: var(--text-xs); }
 
-.chip-removable { height: 28px; padding: 0 2px 0 10px; gap: 2px; font-size: 12px; }
+.chip-removable { height: 28px; padding: 0 2px 0 10px; gap: 2px; font-size: var(--text-sm); }
 .chip-remove { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
 
-.chip-toggle { height: 32px; padding: 0 12px; font-size: 13px; }
+.chip-toggle { height: 32px; padding: 0 12px; font-size: var(--text-md); }
 .chip-toggle[aria-pressed="false"] { background: var(--chip); color: var(--ink); }

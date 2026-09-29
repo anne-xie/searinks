@@ -14,17 +14,17 @@
 .sheet-title { margin: 0 0 8px; font-family: var(--font-display); font-weight: 700; font-size: 20px; }
 .sheet-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; border-bottom: 1px solid var(--divider); cursor: pointer; }
 .sheet-group { margin: 0; padding: 12px 0; border: none; border-bottom: 1px solid var(--divider); }
-.sheet-label { padding: 0; margin-bottom: 8px; font-weight: 700; font-size: 14px; }
+.sheet-label { padding: 0; margin-bottom: 8px; font-weight: 700; font-size: var(--text-base); }
 .sheet-row .sheet-label { margin: 0; }
 .chips { display: flex; gap: 6px; }
-.sheet-check { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 14px; cursor: pointer; }
+.sheet-check { display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: var(--text-base); cursor: pointer; }
 .sheet-check input { width: 18px; height: 18px; accent-color: var(--accent); }
-.sheet-hint { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.sheet-hint { margin: 4px 0 0; color: var(--muted); font-size: var(--text-sm); }
 .sheet-done {
   margin-top: 16px;
   min-height: 48px;
   border-radius: 24px;
-  font-size: 16px;
+  font-size: var(--text-xl);
 }
 
 /* Toggle switch drawn on a real checkbox. */
