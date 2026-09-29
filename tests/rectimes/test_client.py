@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 from datetime import date, datetime
 from unittest.mock import MagicMock, patch
 
@@ -22,19 +23,27 @@ RINK = Rink(
 )
 
 
-def _client(body: list, requests: list[httpx.Request]) -> RecTimesClient:
+SIBLING = replace(
+    RINK,
+    key="sibling",
+    source=RecTimesSource(facility="testfac", venues={20: "Other Rink"}, drop_in_groups=frozenset()),
+)
+
+
+def _client(body: list, requests: list[httpx.Request], rinks: list[Rink] | None = None) -> RecTimesClient:
     """Build a client whose HTTP layer always returns the given body.
 
     Args:
         body: Decoded JSON body every response carries.
         requests: List that captured requests are appended to.
+        rinks: Rinks the client serves; defaults to `RINK` alone.
     """
 
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request)
         return httpx.Response(200, json=body)
 
-    return RecTimesClient(RINK, http=httpx.Client(transport=httpx.MockTransport(handler)))
+    return RecTimesClient(rinks or [RINK], http=httpx.Client(transport=httpx.MockTransport(handler)))
 
 
 def _event(title: str, hour: int) -> Event:
@@ -81,3 +90,24 @@ def test_get_events_parses_for_this_rink_and_sorts_by_start(parse_bookings: Magi
     # THEN: the response is parsed for this rink and results are sorted by start time
     parse_bookings.assert_called_once_with(body, RINK)
     assert [e.title for e in events] == ["Early", "Late"]
+
+
+@patch("searinks.rectimes.client.parse_bookings", return_value=[])
+def test_get_events_fetches_facility_once_for_rinks_sharing_it(parse_bookings: MagicMock) -> None:
+    # GIVEN: two rinks on the same facility, and bookings on each rink's venue plus one on neither
+    ours, theirs, unknown = {"id": 1, "venueId": 10}, {"id": 2, "venueId": 20}, {"id": 3, "venueId": 99}
+    body = [ours, theirs, unknown]
+    requests: list[httpx.Request] = []
+    client = _client(body, requests, rinks=[RINK, SIBLING])
+
+    # WHEN: fetching events
+    client.get_events(date(2026, 9, 26), date(2026, 9, 26))
+
+    # THEN: one request covers both rinks' venues, and each rink parses the bookings not on its sibling's
+    # venues, so the parser only warns about venues that belong to neither
+    (request,) = requests
+    assert json.loads(request.content)["venueIds"] == [10, 11, 20]
+    assert [call.args for call in parse_bookings.call_args_list] == [
+        ([ours, unknown], RINK),
+        ([theirs, unknown], SIBLING),
+    ]

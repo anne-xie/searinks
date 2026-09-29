@@ -10,7 +10,7 @@ from searinks.models.event import Event
 from searinks.models.rink import Rink
 from searinks.rectimes.source import RecTimesSource
 from searinks.rinks.registry import RINKS
-from searinks.schedule import get_all_schedules, get_schedule
+from searinks.schedule import get_all_schedules, get_schedule, tenant_groups
 
 PACIFIC = ZoneInfo("America/Los_Angeles")
 
@@ -89,12 +89,12 @@ def client_cls() -> MagicMock:
         yield cls
 
 
-def test_get_schedule_fetches_each_rink_for_the_date_range(client_cls: MagicMock) -> None:
-    # WHEN: asking for two rinks over a date range
+def test_get_schedule_fetches_each_tenant_for_the_date_range(client_cls: MagicMock) -> None:
+    # WHEN: asking for two rinks on different companies over a date range
     get_schedule([RINK_A, RINK_B], date(2026, 9, 26), date(2026, 9, 28))
 
-    # THEN: each rink gets its own client, queried for that range
-    assert sorted(c.args[0].key for c in client_cls.call_args_list) == ["alpha", "bravo"]
+    # THEN: each company gets its own client, queried for that range
+    assert sorted(c.args[0][0].key for c in client_cls.call_args_list) == ["alpha", "bravo"]
     assert client_cls.return_value.get_events.call_count == 2
     client_cls.return_value.get_events.assert_called_with(date(2026, 9, 26), date(2026, 9, 28))
 
@@ -110,8 +110,8 @@ def test_get_schedule_picks_client_from_rink_source(daysmart_cls: MagicMock, rec
     events = get_schedule([RINK_A, RINK_RECTIMES], date(2026, 9, 26), date(2026, 9, 26))
 
     # THEN: each rink is fetched by the client matching its source
-    daysmart_cls.assert_called_once_with(RINK_A)
-    rectimes_cls.assert_called_once_with(RINK_RECTIMES)
+    daysmart_cls.assert_called_once_with([RINK_A])
+    rectimes_cls.assert_called_once_with([RINK_RECTIMES])
     assert sorted(e.id for e in events) == ["d", "r"]
 
 
@@ -122,13 +122,43 @@ def test_get_schedule_merges_rinks_sorted_by_start_then_rink(client_cls: MagicMo
         "alpha": [_event("a9", "A 9am", rink="alpha", hour=9), _event("a12", "A noon", rink="alpha", hour=12)],
         "bravo": [_event("b8", "B 8am", rink="bravo", hour=8), _event("b12", "B noon", rink="bravo", hour=12)],
     }
-    client_cls.side_effect = lambda rink: MagicMock(get_events=MagicMock(return_value=per_rink[rink.key]))
+    client_cls.side_effect = lambda rinks: MagicMock(get_events=MagicMock(return_value=per_rink[rinks[0].key]))
 
     # WHEN: fetching both rinks
     events = get_schedule([RINK_B, RINK_A], date(2026, 9, 26), date(2026, 9, 26))
 
     # THEN: results are merged and ordered by start time, ties broken by rink
     assert [e.id for e in events] == ["b8", "a9", "a12", "b12"]
+
+
+SHARED_A = _rink("kirk", DaySmartSource(company="shared", sheets={1: "A"}, drop_in_program_types=frozenset()))
+SHARED_B = _rink("ren", DaySmartSource(company="shared", sheets={2: "B"}, drop_in_program_types=frozenset()))
+SHARED_C = _rink("snq", DaySmartSource(company="shared", sheets={3: "C"}, drop_in_program_types=frozenset()))
+FACILITY_A = _rink("ova", RecTimesSource(facility="shared", venues={1: "A"}, drop_in_groups=frozenset()))
+FACILITY_B = _rink("lyn", RecTimesSource(facility="shared", venues={2: "B"}, drop_in_groups=frozenset()))
+
+
+@pytest.mark.parametrize(
+    ("rinks", "expected"),
+    [
+        ([RINK_A, RINK_B], [["alpha"], ["bravo"]]),
+        ([SHARED_A, RINK_A, SHARED_B], [["kirk", "ren"], ["alpha"]]),
+        ([FACILITY_A, SHARED_A, FACILITY_B], [["ova", "lyn"], ["kirk"]]),
+    ],
+)
+def test_tenant_groups_groups_rinks_by_source_account(rinks: list[Rink], expected: list[list[str]]) -> None:
+    # WHEN/THEN: rinks on the same DaySmart company or RecTimes facility share a group, in first-seen order,
+    # and a DaySmart company never groups with a RecTimes facility of the same name
+    assert [[rink.key for rink in group] for group in tenant_groups(rinks)] == expected
+
+
+def test_get_schedule_fetches_a_shared_company_once(client_cls: MagicMock) -> None:
+    # WHEN: asking for three rinks on the same company
+    get_schedule([SHARED_A, SHARED_B, SHARED_C], date(2026, 9, 26), date(2026, 9, 26))
+
+    # THEN: one client serves all three, so the company's API is called once
+    client_cls.assert_called_once_with([SHARED_A, SHARED_B, SHARED_C])
+    client_cls.return_value.get_events.assert_called_once()
 
 
 @patch("searinks.schedule.RecTimesClient")

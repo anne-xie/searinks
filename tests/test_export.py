@@ -79,16 +79,16 @@ def _written(out: Path) -> list[str]:
 
 
 def _fail(get_schedule: MagicMock, errors: dict[str, Exception]) -> None:
-    """Make the patched `get_schedule` raise for some rinks and serve the rest as before.
+    """Make the patched `get_schedule` raise for groups holding some rinks and serve the rest as before.
 
     Args:
         get_schedule: The patched `get_schedule` fixture.
-        errors: Rink key to the exception fetching it raises.
+        errors: Rink key to the exception fetching its group raises.
     """
     serve = get_schedule.side_effect
 
     def fake(rinks: list[Rink], start: date, end: date) -> list[Event]:
-        if error := errors.get(rinks[0].key):
+        if error := next((errors[rink.key] for rink in rinks if rink.key in errors), None):
             raise error
         return serve(rinks, start, end)
 
@@ -183,12 +183,16 @@ def test_day_payloads_groups_by_start_day_within_range(end: date, expected: dict
     assert {day: [e["id"] for e in p["events"]] for day, p in payloads.items()} == expected
 
 
-def test_main_fetches_each_rink_separately_for_inclusive_range(get_schedule: MagicMock, tmp_path: Path) -> None:
+def test_main_fetches_each_source_account_once_for_inclusive_range(get_schedule: MagicMock, tmp_path: Path) -> None:
     # WHEN: exporting 14 days from a date
     main(["--date", "2026-09-26", "--days", "14", "--out-dir", str(tmp_path)])
 
-    # THEN: every rink is fetched on its own for the inclusive range
-    assert sorted(c.args[0][0].key for c in get_schedule.call_args_list) == sorted(RINKS)
+    # THEN: rinks sharing a source account are fetched together, each group once, for the inclusive range
+    assert sorted([r.key for r in c.args[0]] for c in get_schedule.call_args_list) == [
+        ["kirkland", "renton", "snoqualmie"],
+        ["kraken"],
+        ["ova", "lynnwood"],
+    ]
     assert {c.args[1:] for c in get_schedule.call_args_list} == {(date(2026, 9, 26), date(2026, 10, 9))}
 
 
@@ -240,9 +244,9 @@ def test_main_leaves_files_outside_range_untouched(get_schedule: MagicMock, tmp_
 @pytest.mark.parametrize(
     ("error", "event", "expected_code", "expected_counts"),
     [
-        (API_DOWN, "rink_upstream_failed", 0, (len(RINKS) - 1, 1, 0)),
-        (NOT_JSON, "rink_upstream_failed", 0, (len(RINKS) - 1, 1, 0)),
-        (OUR_BUG, "rink_export_failed", 1, (len(RINKS) - 1, 0, 1)),
+        (API_DOWN, "rinks_upstream_failed", 0, (len(RINKS) - 3, 3, 0)),
+        (NOT_JSON, "rinks_upstream_failed", 0, (len(RINKS) - 3, 3, 0)),
+        (OUR_BUG, "rinks_export_failed", 1, (len(RINKS) - 3, 0, 3)),
     ],
 )
 def test_main_keeps_exporting_when_a_rink_fails(
@@ -254,7 +258,7 @@ def test_main_keeps_exporting_when_a_rink_fails(
     expected_code: int,
     expected_counts: tuple[int, int, int],
 ) -> None:
-    # GIVEN: fetching Renton raises and Renton has a previous export for the day
+    # GIVEN: fetching Renton's source account raises and Renton has a previous export for the day
     _fail(get_schedule, {"renton": error})
     previous = tmp_path / "days" / "2026-09-26" / "renton.json"
     previous.parent.mkdir(parents=True)
@@ -264,10 +268,12 @@ def test_main_keeps_exporting_when_a_rink_fails(
     # WHEN: exporting one day
     code = _exit_code(tmp_path)
 
-    # THEN: other rinks are written, Renton's previous file is kept and the failure is classified
-    assert _written(tmp_path) == sorted(f"2026-09-26/{key}.json" for key in RINKS)
+    # THEN: every rink on that account fails together, Renton's previous file is kept, other accounts are
+    # written, and the failure is logged once and classified
+    sno_king = ["kirkland", "renton", "snoqualmie"]
+    assert _written(tmp_path) == sorted(f"2026-09-26/{key}.json" for key in RINKS if key not in sno_king or key == "renton")
     assert previous.read_text() == "previous"
-    assert [(r.levelname, r.rink) for r in caplog.records if r.message == event] == [("ERROR", "renton")]
+    assert [(r.levelname, r.rinks) for r in caplog.records if r.message == event] == [("ERROR", sno_king)]
     finished = next(r for r in caplog.records if r.message == "export_finished")
     assert (finished.succeeded, finished.upstream_failed, finished.internal_failed) == expected_counts
     assert code == expected_code

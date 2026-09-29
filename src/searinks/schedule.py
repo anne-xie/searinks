@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 
 class ScheduleClient(Protocol):
-    """Fetches one rink's events from its schedule source."""
+    """Fetches events for rinks that share one account on a schedule source."""
 
     def get_events(self, start: date, end: date) -> list[Event]:
-        """Return the rink's events sorted by start time.
+        """Return the rinks' events sorted by start time.
 
         Args:
             start: First day to include.
@@ -29,47 +29,76 @@ class ScheduleClient(Protocol):
         ...
 
 
-def _client_for(rink: Rink) -> ScheduleClient:
-    """Build the client for the rink's schedule source.
+def _tenant(rink: Rink) -> tuple[str, str]:
+    """Identify the source account a rink's schedule is fetched from.
 
     Args:
-        rink: Rink to fetch.
+        rink: Rink to identify.
     """
     match rink.source:
         case DaySmartSource():
-            return DaySmartClient(rink)
+            return "daysmart", rink.source.company
         case RecTimesSource():
-            return RecTimesClient(rink)
+            return "rectimes", rink.source.facility
 
 
-def _fetch(rink: Rink, start: date, end: date) -> list[Event]:
-    """Fetch one rink's events, logging overrides that matched none of them.
+def tenant_groups(rinks: Sequence[Rink]) -> list[list[Rink]]:
+    """Group rinks that share a source account, so each account is fetched once.
 
     Args:
-        rink: Rink to fetch.
+        rinks: Rinks to group; groups and the rinks in them keep first-seen order.
+    """
+    groups: dict[tuple[str, str], list[Rink]] = {}
+    for rink in rinks:
+        groups.setdefault(_tenant(rink), []).append(rink)
+    return list(groups.values())
+
+
+def _client_for(rinks: Sequence[Rink]) -> ScheduleClient:
+    """Build the client for a group of rinks sharing one source account.
+
+    Args:
+        rinks: Rinks from one `tenant_groups` group.
+    """
+    match rinks[0].source:
+        case DaySmartSource():
+            return DaySmartClient(rinks)
+        case RecTimesSource():
+            return RecTimesClient(rinks)
+
+
+def _fetch(rinks: Sequence[Rink], start: date, end: date) -> list[Event]:
+    """Fetch one source account's events, logging overrides that matched none of their rink's events.
+
+    Args:
+        rinks: Rinks from one `tenant_groups` group.
         start: First day to include.
         end: Last day to include (inclusive).
     """
-    events = _client_for(rink).get_events(start, end)
-    for title in unmatched_overrides(rink.source.discipline_overrides, (e.title for e in events)):
-        logger.debug("discipline_override_unmatched", extra={"rink": rink.key, "title": title})
+    events = _client_for(rinks).get_events(start, end)
+    for rink in rinks:
+        titles = (e.title for e in events if e.rink == rink.key)
+        for title in unmatched_overrides(rink.source.discipline_overrides, titles):
+            logger.debug("discipline_override_unmatched", extra={"rink": rink.key, "title": title})
     return events
 
 
 def get_schedule(rinks: Sequence[Rink], start: date, end: date) -> list[Event]:
     """Return events across rinks sorted by start time.
 
-    Sources serve one rink per request, so rinks are fetched in parallel and
-    merged here. A failure fetching any rink raises.
+    Each source account is fetched once for all of its rinks, accounts are
+    fetched in parallel, and results are merged here. A failure fetching any
+    account raises.
 
     Args:
         rinks: Rinks to query.
         start: First day to include.
         end: Last day to include (inclusive).
     """
-    with ThreadPoolExecutor(max_workers=max(len(rinks), 1)) as pool:
-        per_rink = pool.map(lambda rink: _fetch(rink, start, end), rinks)
-        events = [event for rink_events in per_rink for event in rink_events]
+    groups = tenant_groups(rinks)
+    with ThreadPoolExecutor(max_workers=max(len(groups), 1)) as pool:
+        per_group = pool.map(lambda group: _fetch(group, start, end), groups)
+        events = [event for group_events in per_group for event in group_events]
     return sorted(events, key=lambda e: (e.start, e.rink, e.sheet))
 
 

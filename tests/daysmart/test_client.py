@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import date, datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
@@ -22,12 +23,20 @@ RINK = Rink(
 )
 
 
-def _client(last_page: int, requests: list[httpx.Request]) -> DaySmartClient:
+SIBLING = replace(
+    RINK,
+    key="sibling",
+    source=DaySmartSource(company="testco", sheets={2: "Sheet 2"}, drop_in_program_types=frozenset({"Camp"})),
+)
+
+
+def _client(last_page: int, requests: list[httpx.Request], rinks: list[Rink] | None = None) -> DaySmartClient:
     """Build a client whose HTTP layer returns bodies tagged with their page number.
 
     Args:
         last_page: `last-page` reported in every response.
         requests: List that captured requests are appended to.
+        rinks: Rinks the client serves; defaults to `RINK` alone.
     """
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -35,18 +44,19 @@ def _client(last_page: int, requests: list[httpx.Request]) -> DaySmartClient:
         body: dict[str, Any] = {"page": request.url.params["page[number]"], "meta": {"page": {"last-page": last_page}}}
         return httpx.Response(200, json=body)
 
-    return DaySmartClient(RINK, http=httpx.Client(transport=httpx.MockTransport(handler)))
+    return DaySmartClient(rinks or [RINK], http=httpx.Client(transport=httpx.MockTransport(handler)))
 
 
-def _event(title: str, hour: int) -> Event:
+def _event(title: str, hour: int, rink: str = "test") -> Event:
     """Build an event starting at the given hour.
 
     Args:
         title: Event title.
         hour: Start hour on 2026-09-26.
+        rink: Key of the rink the event is at.
     """
     start = datetime(2026, 9, 26, hour)
-    return Event(id=title, title=title, event_type="Camp", rink="test", sheet="Sheet 1", start=start, end=start)
+    return Event(id=title, title=title, event_type="Camp", rink=rink, sheet="Sheet 1", start=start, end=start)
 
 
 @patch("searinks.daysmart.client.parse_events", return_value=[])
@@ -58,12 +68,14 @@ def test_get_events_sends_company_and_date_filters(parse_events: MagicMock) -> N
     # WHEN: fetching a date range
     client.get_events(date(2026, 9, 26), date(2026, 9, 27))
 
-    # THEN: the request is scoped to the rink's company and date range
+    # THEN: the request is scoped to the rink's company, date range and ice sheets, in large pages
     params = requests[0].url.params
     assert requests[0].url.path == "/dash/jsonapi/api/v1/events"
     assert params["company"] == "testco"
     assert params["filter[start_date__gte]"] == "2026-09-26"
     assert params["filter[start_date__lte]"] == "2026-09-27"
+    assert params["filter[resource_id__in]"] == "1"
+    assert params["page[size]"] == "1000"
 
 
 @patch("searinks.daysmart.client.parse_events")
@@ -80,3 +92,21 @@ def test_get_events_follows_pagination_and_sorts_by_start(parse_events: MagicMoc
     assert [r.url.params["page[number]"] for r in requests] == ["1", "2"]
     assert all(call.args[1] is RINK for call in parse_events.call_args_list)
     assert [e.title for e in events] == ["Early", "Late"]
+
+
+@patch("searinks.daysmart.client.parse_events")
+def test_get_events_fetches_company_once_for_rinks_sharing_it(parse_events: MagicMock) -> None:
+    # GIVEN: two rinks on the same company, each with its own sheet
+    parse_events.side_effect = lambda body, rink: [_event(f"{rink.key} event", 9 if rink is SIBLING else 12, rink.key)]
+    requests: list[httpx.Request] = []
+    client = _client(last_page=1, requests=requests, rinks=[RINK, SIBLING])
+
+    # WHEN: fetching events
+    events = client.get_events(date(2026, 9, 26), date(2026, 9, 26))
+
+    # THEN: the company is requested once for both rinks' sheets, the page is parsed for each rink,
+    # and events merge by start time
+    assert len(requests) == 1
+    assert requests[0].url.params["filter[resource_id__in]"] == "1,2"
+    assert [call.args[1] for call in parse_events.call_args_list] == [RINK, SIBLING]
+    assert [e.title for e in events] == ["sibling event", "test event"]

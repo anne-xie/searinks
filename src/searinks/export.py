@@ -16,7 +16,7 @@ from searinks.logs import configure_logging
 from searinks.models.event import Event
 from searinks.models.rink import Rink
 from searinks.rinks.registry import RINKS
-from searinks.schedule import get_schedule
+from searinks.schedule import get_schedule, tenant_groups
 
 logger = logging.getLogger(__name__)
 
@@ -100,37 +100,48 @@ def day_payloads(
     }
 
 
-def _export_rink(rink: Rink, start: date, end: date, out_dir: Path) -> RinkResult:
-    """Fetch one rink and write its day files, logging instead of raising on failure.
+def _export_group(rinks: Sequence[Rink], start: date, end: date, out_dir: Path) -> list[RinkResult]:
+    """Fetch rinks sharing a source account and write each rink's day files, logging instead of raising.
+
+    The account is fetched once, so a failure fails every rink in the group;
+    each failed rink keeps its previous files.
 
     Args:
-        rink: Rink to export.
+        rinks: Rinks from one `tenant_groups` group.
         start: First day to include.
         end: Last day to include (inclusive).
         out_dir: Export output directory.
+
+    Returns:
+        One result per rink, all the same.
     """
+    keys = [rink.key for rink in rinks]
     try:
-        events = get_schedule([rink], start, end)
-        payloads = day_payloads(events, rink.key, start, end, datetime.now(ZoneInfo("America/Los_Angeles")))
-        for day, payload in payloads.items():
-            path = out_dir / "days" / day.isoformat() / f"{rink.key}.json"
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(payload, indent=1))
+        events = get_schedule(rinks, start, end)
+        generated_at = datetime.now(ZoneInfo("America/Los_Angeles"))
+        by_rink = {key: [e for e in events if e.rink == key] for key in keys}
+        for key, rink_events in by_rink.items():
+            for day, payload in day_payloads(rink_events, key, start, end, generated_at).items():
+                path = out_dir / "days" / day.isoformat() / f"{key}.json"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(json.dumps(payload, indent=1))
     except UPSTREAM_ERRORS:
-        logger.exception("rink_upstream_failed", extra={"rink": rink.key})
-        return RinkResult.UPSTREAM_FAILED
+        logger.exception("rinks_upstream_failed", extra={"rinks": keys})
+        return [RinkResult.UPSTREAM_FAILED] * len(rinks)
     except Exception:
-        logger.exception("rink_export_failed", extra={"rink": rink.key})
-        return RinkResult.INTERNAL_FAILED
-    logger.info("rink_exported", extra={"rink": rink.key, "events": len(events)})
-    return RinkResult.OK
+        logger.exception("rinks_export_failed", extra={"rinks": keys})
+        return [RinkResult.INTERNAL_FAILED] * len(rinks)
+    for key, rink_events in by_rink.items():
+        logger.info("rink_exported", extra={"rink": key, "events": len(rink_events)})
+    return [RinkResult.OK] * len(rinks)
 
 
 def main(argv: list[str] | None = None) -> None:
     """Write unfiltered schedules for the static site, one file per rink per day.
 
-    Only the requested rinks and days are rewritten, and a rink that fails
-    keeps its previous files. Exits 1 if any rink failed on our side, 2 if
+    Rinks sharing a source account are fetched with one request, only the
+    requested rinks and days are rewritten, and a rink that fails keeps its
+    previous files. Exits 1 if any rink failed on our side, 2 if
     every rink's API failed, and 0 otherwise, including when only some APIs failed.
 
     Args:
@@ -161,8 +172,10 @@ def main(argv: list[str] | None = None) -> None:
     args.out_dir.mkdir(parents=True, exist_ok=True)
     generated_at = datetime.now(ZoneInfo("America/Los_Angeles"))
     (args.out_dir / "rinks.json").write_text(json.dumps(rinks_payload(list(RINKS.values()), generated_at), indent=1))
-    with ThreadPoolExecutor(max_workers=len(rinks)) as pool:
-        results = list(pool.map(lambda rink: _export_rink(rink, start, end, args.out_dir), rinks))
+    groups = tenant_groups(rinks)
+    with ThreadPoolExecutor(max_workers=len(groups)) as pool:
+        per_group = pool.map(lambda group: _export_group(group, start, end, args.out_dir), groups)
+        results = [result for group_results in per_group for result in group_results]
 
     counts = {result: results.count(result) for result in RinkResult}
     logger.info(
