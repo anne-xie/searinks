@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 
 import httpx
 
+from searinks.clock import today_pacific
 from searinks.logs import configure_logging
 from searinks.models.event import Event
 from searinks.models.rink import Rink
@@ -142,25 +143,26 @@ def main(argv: list[str] | None = None) -> None:
         choices=sorted(RINKS),
         help="rink to export; repeat for several (default: all)",
     )
-    parser.add_argument("--date", type=date.fromisoformat, default=date.today(), help="first day (YYYY-MM-DD)")
+    parser.add_argument("--date", type=date.fromisoformat, help="first day (YYYY-MM-DD; default: today, Pacific)")
     parser.add_argument("--days", type=int, default=14, help="number of days to export")
     parser.add_argument("--out-dir", type=Path, default=Path("site/data"), help="output directory")
     parser.add_argument("-v", "--verbose", action="store_true", help="log debug details to stderr")
     args = parser.parse_args(argv)
     configure_logging(verbose=args.verbose)
 
+    start = args.date or today_pacific()
     rinks = [RINKS[key] for key in dict.fromkeys(args.rink)] if args.rink else list(RINKS.values())
-    end = args.date + timedelta(days=args.days - 1)
+    end = start + timedelta(days=args.days - 1)
     logger.info(
         "export_started",
-        extra={"rinks": [r.key for r in rinks], "start": args.date.isoformat(), "end": end.isoformat()},
+        extra={"rinks": [r.key for r in rinks], "start": start.isoformat(), "end": end.isoformat()},
     )
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     generated_at = datetime.now(ZoneInfo("America/Los_Angeles"))
     (args.out_dir / "rinks.json").write_text(json.dumps(rinks_payload(list(RINKS.values()), generated_at), indent=1))
     with ThreadPoolExecutor(max_workers=len(rinks)) as pool:
-        results = list(pool.map(lambda rink: _export_rink(rink, args.date, end, args.out_dir), rinks))
+        results = list(pool.map(lambda rink: _export_rink(rink, start, end, args.out_dir), rinks))
 
     counts = {result: results.count(result) for result in RinkResult}
     logger.info(

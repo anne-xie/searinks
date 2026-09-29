@@ -192,6 +192,15 @@ def test_main_fetches_each_rink_separately_for_inclusive_range(get_schedule: Mag
     assert {c.args[1:] for c in get_schedule.call_args_list} == {(date(2026, 9, 26), date(2026, 10, 9))}
 
 
+@patch("searinks.export.today_pacific", return_value=date(2026, 9, 28))
+def test_main_defaults_to_today_in_pacific(today_pacific: MagicMock, get_schedule: MagicMock, tmp_path: Path) -> None:
+    # WHEN: exporting without a date, as CI does on UTC runners
+    main(["--days", "2", "--out-dir", str(tmp_path)])
+
+    # THEN: the range starts on the Pacific date, not the machine's
+    assert {c.args[1:] for c in get_schedule.call_args_list} == {(date(2026, 9, 28), date(2026, 9, 29))}
+
+
 def test_main_writes_rinks_and_one_file_per_rink_per_day(get_schedule: MagicMock, tmp_path: Path) -> None:
     # GIVEN: an output directory that doesn't exist yet
     out = tmp_path / "site" / "data"

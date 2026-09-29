@@ -31,7 +31,7 @@ On the site these live under `https://anne-xie.github.io/searinks/data/`.
 
 > Not live yet: both Actions are added in #21.
 
-To make a fresh dump locally instead, run `uv run searinks-export`. It writes the same files to `site/data/` (`--days N` changes the range, `--rink KEY` limits it to some rinks).
+To make a fresh dump locally instead, run `uv run searinks-export`. It writes the same files to `site/data/` (`--days N` changes the range, `--rink KEY` limits it to some rinks). `uv run searinks-prune` deletes days that have passed.
 
 ## Development
 
