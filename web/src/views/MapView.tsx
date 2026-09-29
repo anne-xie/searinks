@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 
-import type { Rink } from "../data";
+import type { Rink } from "@/data";
 
 /**
  * Map tab placeholder until #14 lands.

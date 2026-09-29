@@ -11,7 +11,8 @@
     "noUnusedParameters": true,
     "skipLibCheck": true,
     "types": ["vite/client"],
-    "noEmit": true
+    "noEmit": true,
+    "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src", "tests", "vite.config.ts"]
 }

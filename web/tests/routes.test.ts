@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseRoute } from "../src/routes";
+import { parseRoute } from "@/routes";
 
 describe("parseRoute", () => {
   it.each([

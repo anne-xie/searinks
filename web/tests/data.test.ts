@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { type Day, lastUpdated, loadDay, loadRinks, type RinksFile } from "../src/data";
+import { type Day, lastUpdated, loadDay, loadRinks, type RinksFile } from "@/data";
 
 const RINKS: RinksFile = {
   generated_at: "2026-09-26T08:00:00-07:00",

@@ -1,6 +1,6 @@
 import type { JSX } from "preact";
 
-import type { Route } from "../routes";
+import type { Route } from "@/routes";
 
 const TABS: { route: Route; label: string }[] = [
   { route: "schedule", label: "Schedule" },
