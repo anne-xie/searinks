@@ -8,8 +8,6 @@ Seattle-area ice rink schedules in one place: Kraken Community Iceplex, Sno-King
 
 Works on phones and desktop. No sign-in needed.
 
-> Not live yet: GitHub Pages is turned on in #22.
-
 ## Data and refresh schedule
 
 Two GitHub Actions keep the site current while calling the rinks' booking systems as little as possible:
@@ -28,8 +26,6 @@ The latest data dump is JSON, on the `data` branch and alongside the site:
 - `days/<YYYY-MM-DD>/<rink>.json`: one rink's sessions for one day, e.g. `days/2026-09-26/kraken.json`
 
 On the site these live under `https://anne-xie.github.io/searinks/data/`.
-
-> Not live yet: both Actions are added in #21.
 
 To make a fresh dump locally instead, run `uv run searinks-export`. It writes the same files to `site/data/` (`--days N` changes the range, `--rink KEY` limits it to some rinks). `uv run searinks-prune` deletes days that have passed.
 
