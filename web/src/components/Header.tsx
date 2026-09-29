@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 
 import type { Route } from "@/routes";
+import "@/components/Header.css";
 
 const TABS: { route: Route; label: string }[] = [
   { route: "schedule", label: "Schedule" },

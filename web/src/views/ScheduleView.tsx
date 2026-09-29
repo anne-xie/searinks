@@ -9,6 +9,7 @@ import type { Rink } from "@/data";
 import { DEFAULT_PREFERENCES, type Preferences } from "@/preferences";
 import { dayHeading, dayMessage, filterEvents, rinksLabel, todayPacific, weekDates } from "@/schedule";
 import { type LoadedDay, useDays } from "@/useDays";
+import "@/views/ScheduleView.css";
 
 const DAYS = 7;
 

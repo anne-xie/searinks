@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 
 import type { Rink } from "@/data";
+import "@/views/MapView.css";
 
 /**
  * Map tab placeholder until #14 lands.

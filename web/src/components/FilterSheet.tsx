@@ -4,6 +4,7 @@ import { useEffect, useRef } from "preact/hooks";
 import type { Rink } from "@/data";
 import type { Preferences } from "@/preferences";
 import type { Discipline } from "@/schedule";
+import "@/components/FilterSheet.css";
 
 export const SPORTS: { key: Discipline; label: string }[] = [
   { key: "hockey", label: "Hockey" },

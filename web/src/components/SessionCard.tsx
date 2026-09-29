@@ -2,6 +2,7 @@ import type { JSX } from "preact";
 
 import type { Event, Rink } from "@/data";
 import { capacity, formatTime, rinkLine } from "@/schedule";
+import "@/components/SessionCard.css";
 
 const SPORT_LABELS = { hockey: "Hockey", figure: "Figure", public: "Public" } as const;
 

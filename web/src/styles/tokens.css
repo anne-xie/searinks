@@ -1,0 +1,21 @@
+/* D2 design tokens; see docs/mocks/phone/README.md and docs/mocks/web/README.md. */
+:root {
+  --font-display: "Baloo 2", "DM Sans", sans-serif;
+  --font-body: "DM Sans", "Helvetica Neue", sans-serif;
+  --ink: #12284a;
+  --muted: #56677d;
+  --accent: #1f4fcc;
+  --bg: #f4f9fd;
+  --band: #e4effb;
+  --divider: #dce8f3;
+  --chip: #e7eff7;
+  --surface: #ffffff;
+  --hockey-bg: #dce7ff;
+  --hockey-ink: #1b3fa8;
+  --figure-bg: #f1e2ff;
+  --figure-ink: #5b2a91;
+  --public-bg: #d6f4f1;
+  --public-ink: #0b5c57;
+  --nearly-full: #a34a0b;
+  --now-line: #e5484d;
+}

@@ -1,6 +1,7 @@
 import type { JSX } from "preact";
 
 import { stripLabel } from "@/schedule";
+import "@/components/DateStrip.css";
 
 /**
  * Row of days; the selected one is filled.

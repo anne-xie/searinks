@@ -1,0 +1,3 @@
+.rink-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.rink-list li { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-top: 1px solid var(--divider); }
+.rink-name { font-weight: 700; font-size: 15px; }

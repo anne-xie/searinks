@@ -1,0 +1,78 @@
+.logo { display: flex; align-items: center; gap: 8px; color: var(--accent); text-decoration: none; }
+.wordmark { font-family: var(--font-display); font-weight: 700; font-size: 24px; color: var(--ink); }
+
+/* Phone header: band, gear, pill tabs. */
+.header-phone {
+  background: var(--band);
+  border-radius: 0 0 22px 22px;
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.header-phone-row { display: flex; align-items: center; justify-content: space-between; }
+.gear {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 22px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.pills { display: flex; gap: 4px; padding: 3px; background: var(--surface); border-radius: 20px; }
+.pill {
+  flex-grow: 1;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 17px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+}
+.pill[aria-current="page"] { background: var(--accent); color: var(--surface); }
+
+/* Desktop header: white top bar with text links and a Preferences button. */
+.header-desktop {
+  display: none;
+  height: 64px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--divider);
+  padding: 0 32px;
+  align-items: center;
+  gap: 48px;
+}
+.links { display: flex; gap: 28px; flex-grow: 1; }
+.link {
+  height: 64px;
+  padding: 3px 4px 0;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+.link[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+.prefs-button {
+  height: 40px;
+  padding: 0 14px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--divider);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+.prefs-button[aria-current="page"] { color: var(--accent); border-color: var(--accent); }
+
+@media (min-width: 1024px) {
+  .header-phone { display: none; }
+  .header-desktop { display: flex; }
+}
