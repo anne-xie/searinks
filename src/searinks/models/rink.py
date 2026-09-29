@@ -11,7 +11,7 @@ class Rink:
     Args:
         key: Short id used on the command line.
         name: Display name.
-        short_name: Compact label for tabs and pills, e.g. "Kraken".
+        short_name: Compact label for tabs and pills, e.g. "KCI".
         code: Three-letter map pin label, e.g. "KCI".
         area: Neighborhood or city the rink is in.
         lat: Latitude of the building.

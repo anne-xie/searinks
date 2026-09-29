@@ -124,7 +124,7 @@ def test_rinks_payload_serializes_display_metadata() -> None:
             {
                 "key": "kraken",
                 "name": "Kraken Community Iceplex",
-                "short_name": "Kraken",
+                "short_name": "KCI",
                 "code": "KCI",
                 "area": "Northgate",
                 "lat": 47.7063,

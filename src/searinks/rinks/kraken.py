@@ -4,7 +4,7 @@ from searinks.models.rink import Rink
 KRAKEN = Rink(
     key="kraken",
     name="Kraken Community Iceplex",
-    short_name="Kraken",
+    short_name="KCI",
     code="KCI",
     area="Northgate",
     lat=47.7063,

@@ -4,7 +4,7 @@ from searinks.models.rink import Rink
 KIRKLAND = Rink(
     key="kirkland",
     name="Sno-King Kirkland",
-    short_name="Kirkland",
+    short_name="Sno-King Kirkland",
     code="KIR",
     area="Kirkland",
     lat=47.7304,
