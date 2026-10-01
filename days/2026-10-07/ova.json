@@ -1,0 +1,77 @@
+{
+ "date": "2026-10-07",
+ "rink": "ova",
+ "generated_at": "2026-10-01T11:38:32.973284-07:00",
+ "events": [
+  {
+   "id": "8076320",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-07T06:00:00-07:00",
+   "end": "2026-10-07T09:00:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "8076498",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-07T09:15:00-07:00",
+   "end": "2026-10-07T11:45:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "8076886",
+   "title": "SJHA STICK & PUCK",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-07T15:00:00-07:00",
+   "end": "2026-10-07T17:00:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  },
+  {
+   "id": "8077116",
+   "title": "SJHA",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-07T17:15:00-07:00",
+   "end": "2026-10-07T22:00:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  },
+  {
+   "id": "8711063",
+   "title": "Kraken Hockey League",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-07T22:15:00-07:00",
+   "end": "2026-10-07T23:30:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  }
+ ]
+}

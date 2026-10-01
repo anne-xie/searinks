@@ -1,0 +1,81 @@
+{
+ "generated_at": "2026-10-01T11:38:32.371460-07:00",
+ "rinks": [
+  {
+   "key": "kraken",
+   "name": "Kraken Community Iceplex",
+   "short_name": "KCI",
+   "code": "KCI",
+   "area": "Northgate",
+   "lat": 47.7063,
+   "lng": -122.3252,
+   "sheets": [
+    "Starbucks Rink 1",
+    "Smartsheet Rink 2",
+    "VMFH Rink 3"
+   ]
+  },
+  {
+   "key": "kirkland",
+   "name": "Sno-King Kirkland",
+   "short_name": "Sno-King Kirkland",
+   "code": "KIR",
+   "area": "Kirkland",
+   "lat": 47.7304,
+   "lng": -122.1737,
+   "sheets": [
+    "Kirkland"
+   ]
+  },
+  {
+   "key": "renton",
+   "name": "Sno-King Renton",
+   "short_name": "Sno-King Renton",
+   "code": "REN",
+   "area": "Renton",
+   "lat": 47.4898,
+   "lng": -122.1212,
+   "sheets": [
+    "Renton Large",
+    "Renton Small"
+   ]
+  },
+  {
+   "key": "snoqualmie",
+   "name": "Sno-King Snoqualmie",
+   "short_name": "Sno-King Snoqualmie",
+   "code": "SNQ",
+   "area": "Snoqualmie",
+   "lat": 47.5248,
+   "lng": -121.8689,
+   "sheets": [
+    "Snoqualmie A",
+    "Snoqualmie B"
+   ]
+  },
+  {
+   "key": "ova",
+   "name": "Olympic View Arena",
+   "short_name": "OVA",
+   "code": "OVA",
+   "area": "Mountlake Terrace",
+   "lat": 47.7971,
+   "lng": -122.3284,
+   "sheets": [
+    "Main Rink"
+   ]
+  },
+  {
+   "key": "lynnwood",
+   "name": "Lynnwood Ice Center",
+   "short_name": "LIC",
+   "code": "LIC",
+   "area": "Lynnwood",
+   "lat": 47.8194,
+   "lng": -122.3249,
+   "sheets": [
+    "Main Rink"
+   ]
+  }
+ ]
+}
