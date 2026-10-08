@@ -1,0 +1,91 @@
+{
+ "date": "2026-10-19",
+ "rink": "ova",
+ "generated_at": "2026-10-08T12:05:01.433785-07:00",
+ "events": [
+  {
+   "id": "8076328",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-19T06:00:00-07:00",
+   "end": "2026-10-19T09:00:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "8076506",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-19T09:15:00-07:00",
+   "end": "2026-10-19T11:45:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "9022024",
+   "title": "Seattle Torrent",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-19T12:00:00-07:00",
+   "end": "2026-10-19T13:00:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": null
+  },
+  {
+   "id": "8076826",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-19T14:00:00-07:00",
+   "end": "2026-10-19T17:00:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "8077047",
+   "title": "SJHA",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-19T17:15:00-07:00",
+   "end": "2026-10-19T22:00:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  },
+  {
+   "id": "8711069",
+   "title": "Kraken Hockey League",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-19T22:15:00-07:00",
+   "end": "2026-10-19T23:30:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  }
+ ]
+}
