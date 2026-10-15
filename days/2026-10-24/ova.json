@@ -1,0 +1,21 @@
+{
+ "date": "2026-10-24",
+ "rink": "ova",
+ "generated_at": "2026-10-15T10:30:59.246107-07:00",
+ "events": [
+  {
+   "id": "8076986",
+   "title": "SJHA",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-10-24T07:00:00-07:00",
+   "end": "2026-10-24T21:00:00-07:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  }
+ ]
+}
