@@ -1,0 +1,91 @@
+{
+ "date": "2026-11-04",
+ "rink": "ova",
+ "generated_at": "2026-10-29T11:44:04.964044-07:00",
+ "events": [
+  {
+   "id": "8076340",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-04T06:00:00-08:00",
+   "end": "2026-11-04T09:00:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "8076518",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-04T09:15:00-08:00",
+   "end": "2026-11-04T11:45:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "9098106",
+   "title": "Seattle Torrent",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-04T12:00:00-08:00",
+   "end": "2026-11-04T13:15:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": null
+  },
+  {
+   "id": "8076890",
+   "title": "SJHA STICK & PUCK",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-04T15:00:00-08:00",
+   "end": "2026-11-04T17:00:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  },
+  {
+   "id": "8077120",
+   "title": "SJHA",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-04T17:15:00-08:00",
+   "end": "2026-11-04T22:00:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  },
+  {
+   "id": "8711079",
+   "title": "Kraken Hockey League",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-04T22:15:00-08:00",
+   "end": "2026-11-04T23:30:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  }
+ ]
+}
