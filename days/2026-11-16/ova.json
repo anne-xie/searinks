@@ -1,0 +1,77 @@
+{
+ "date": "2026-11-16",
+ "rink": "ova",
+ "generated_at": "2026-11-05T12:25:21.799290-08:00",
+ "events": [
+  {
+   "id": "8076348",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-16T06:00:00-08:00",
+   "end": "2026-11-16T09:00:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "8076526",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-16T09:15:00-08:00",
+   "end": "2026-11-16T11:45:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "8076834",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-16T14:00:00-08:00",
+   "end": "2026-11-16T17:00:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure"
+  },
+  {
+   "id": "8077051",
+   "title": "SJHA",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-16T17:15:00-08:00",
+   "end": "2026-11-16T22:00:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  },
+  {
+   "id": "8711085",
+   "title": "Kraken Hockey League",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-16T22:15:00-08:00",
+   "end": "2026-11-16T23:30:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey"
+  }
+ ]
+}
