@@ -85,6 +85,15 @@ export function filterEvents(events: Event[], filters: Filters): Event[] {
 }
 
 /**
+ * Drop the events that have already ended; one still in progress stays.
+ * @param events Events to filter.
+ * @param now Current instant.
+ */
+export function upcomingEvents(events: Event[], now: Date): Event[] {
+  return events.filter((e) => Date.parse(e.end) >= now.getTime());
+}
+
+/**
  * Taken/total for an event, or null when its source doesn't report both.
  * @param event Event to describe.
  */
@@ -126,10 +135,12 @@ export function rinksLabel(rinks: Rink[], selected: string[]): string {
 
 /**
  * What to say under a day heading when there's nothing to list, or null when there are events to show.
- * @param counts.events Events across the day's rinks, before filtering.
- * @param counts.shown Events left after filtering.
+ * @param counts.events Events across the day's rinks.
+ * @param counts.upcoming Events that haven't ended yet.
+ * @param counts.shown Upcoming events left after filtering.
  */
-export function dayMessage(counts: { events: number; shown: number }): string | null {
+export function dayMessage(counts: { events: number; upcoming: number; shown: number }): string | null {
   if (counts.shown > 0) return null;
-  return counts.events === 0 ? "No events" : "No events match your filters";
+  if (counts.events === 0) return "No events";
+  return counts.upcoming === 0 ? "No more sessions today" : "No events match your filters";
 }
