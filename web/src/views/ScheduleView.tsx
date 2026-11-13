@@ -9,7 +9,7 @@ import { FilterIcon, PinIcon } from "@/components/icons";
 import { SessionCard } from "@/components/SessionCard";
 import type { Rink } from "@/data";
 import { DEFAULT_PREFERENCES, type Preferences } from "@/preferences";
-import { type Discipline, dayHeading, dayMessage, filterEvents, rinksLabel, todayPacific, weekDates } from "@/schedule";
+import { type Discipline, dayHeading, dayMessage, filterEvents, rinksLabel, todayPacific, upcomingEvents, weekDates } from "@/schedule";
 import { type LoadedDay, useDays } from "@/useDays";
 import "@/views/ScheduleView.css";
 
@@ -31,6 +31,7 @@ export function ScheduleView({
   const [filters, setFilters] = useState<Preferences>(DEFAULT_PREFERENCES);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [selected, setSelected] = useState(dates[0]);
+  const now = useMemo(() => new Date(), []);
 
   const rinkKeys = filters.rinks.length ? rinks.filter((r) => filters.rinks.includes(r.key)).map((r) => r.key) : rinks.map((r) => r.key);
   const { days, error, generatedAt } = useDays(dates, rinkKeys);
@@ -120,6 +121,7 @@ export function ScheduleView({
             key={day.date}
             day={day}
             filters={filters}
+            now={now}
             byKey={byKey}
             headingRef={(el) => (el ? headings.current.set(day.date, el) : headings.current.delete(day.date))}
           />
@@ -141,22 +143,26 @@ export function ScheduleView({
  * One day's heading and sessions, or a note when there are none.
  * @param day Loaded events for the day.
  * @param filters Current filters.
+ * @param now Current instant; sessions that ended before it are hidden.
  * @param byKey Rinks by key.
  * @param headingRef Receives the heading element, for scroll tracking.
  */
 function DaySection({
   day,
   filters,
+  now,
   byKey,
   headingRef,
 }: {
   day: LoadedDay;
   filters: Preferences;
+  now: Date;
   byKey: Map<string, Rink>;
   headingRef: (el: HTMLElement | null) => void;
 }): JSX.Element {
-  const events = filterEvents(day.events, filters);
-  const message = dayMessage({ events: day.events.length, shown: events.length });
+  const upcoming = upcomingEvents(day.events, now);
+  const events = filterEvents(upcoming, filters);
+  const message = dayMessage({ events: day.events.length, upcoming: upcoming.length, shown: events.length });
 
   return (
     <div class="day">

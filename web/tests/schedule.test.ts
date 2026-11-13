@@ -11,6 +11,7 @@ import {
   rinkLine,
   rinksLabel,
   todayPacific,
+  upcomingEvents,
   weekDates,
 } from "@/schedule";
 
@@ -158,13 +159,31 @@ describe("rinksLabel", () => {
   });
 });
 
+describe("upcomingEvents", () => {
+  // GIVEN: a session running 11:15 to 12:15 Pacific
+  const session = event();
+
+  it.each([
+    ["before it starts", "2026-09-26T10:00:00-07:00", true],
+    ["while it's running", "2026-09-26T11:30:00-07:00", true],
+    ["the moment it ends", "2026-09-26T12:15:00-07:00", true],
+    ["after it ended", "2026-09-26T12:16:00-07:00", false],
+    ["after it ended, in UTC", "2026-09-26T19:16:00Z", false],
+    ["the day before", "2026-09-25T23:00:00-07:00", true],
+  ])("%s", (_name, now, kept) => {
+    // WHEN/THEN: only sessions whose end has passed are dropped
+    expect(upcomingEvents([session], new Date(now))).toEqual(kept ? [session] : []);
+  });
+});
+
 describe("dayMessage", () => {
   it.each([
-    [{ events: 3, shown: 2 }, null],
-    [{ events: 0, shown: 0 }, "No events"],
-    [{ events: 3, shown: 0 }, "No events match your filters"],
+    [{ events: 3, upcoming: 3, shown: 2 }, null],
+    [{ events: 0, upcoming: 0, shown: 0 }, "No events"],
+    [{ events: 3, upcoming: 0, shown: 0 }, "No more sessions today"],
+    [{ events: 3, upcoming: 2, shown: 0 }, "No events match your filters"],
   ])("for %j is %j", (counts, expected) => {
-    // WHEN/THEN: a day with nothing scheduled says so, and filtered-out events are told apart
+    // WHEN/THEN: nothing scheduled, everything over, and everything filtered out are told apart
     expect(dayMessage(counts)).toBe(expected);
   });
 });
