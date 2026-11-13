@@ -1,6 +1,7 @@
 import logging
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from searinks.disciplines import discipline_for
@@ -10,6 +11,8 @@ from searinks.models.rink import Rink
 logger = logging.getLogger(__name__)
 
 NOT_DROP_IN_SPORTS = {"Private Lessons"}
+# DaySmart's member site; it lists a company's drop-in events by day.
+ONLINE_URL = "https://apps.daysmartrecreation.com/dash/x/#/online"
 
 Included = dict[tuple[str, str], dict[str, Any]]
 
@@ -62,20 +65,44 @@ def _parse_event(raw: dict[str, Any], included: Included, rink: Rink, tz: ZoneIn
     title = (summary.get("name") or "").strip() or (attrs.get("desc") or "").strip()
     if not title:
         logger.warning("daysmart_event_untitled", extra=log_extra)
+    start = datetime.fromisoformat(attrs["start"]).replace(tzinfo=tz)
+    drop_in = program_type in source.drop_in_program_types and sport not in NOT_DROP_IN_SPORTS
     return Event(
         id=raw["id"],
         title=title,
         event_type=(event_type or {}).get("attributes", {}).get("name", attrs["event_type_id"]),
         rink=rink.key,
         sheet=sheet,
-        start=datetime.fromisoformat(attrs["start"]).replace(tzinfo=tz),
+        start=start,
         end=datetime.fromisoformat(attrs["end"]).replace(tzinfo=tz),
         open_slots=summary.get("open_slots"),
         capacity=summary.get("composite_capacity"),
         sport=sport,
-        drop_in=program_type in source.drop_in_program_types and sport not in NOT_DROP_IN_SPORTS,
+        drop_in=drop_in,
         discipline=discipline_for(sport, title, source.discipline_overrides),
+        booking_url=_booking_url(source.company, start.date(), included[("teams", str(attrs["hteam_id"]))])
+        if drop_in
+        else None,
     )
+
+
+def _booking_url(company: str, day: date, team: dict[str, Any]) -> str:
+    """Link to the day's drop-in list, narrowed to the program's building and sport.
+
+    DaySmart has no page for a single event; this is the closest it gets.
+
+    Args:
+        company: DaySmart tenant slug.
+        day: Local day the event starts on.
+        team: The event's program ("team") resource.
+    """
+    sport = team.get("relationships", {}).get("sport", {}).get("data") or {}
+    params = {
+        "date": day.isoformat(),
+        "facility_ids": team.get("attributes", {}).get("facility_id"),
+        "sport_ids": sport.get("id"),
+    }
+    return f"{ONLINE_URL}/{company}/event-registration?{urlencode({k: v for k, v in params.items() if v})}"
 
 
 def _program(

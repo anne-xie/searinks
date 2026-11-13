@@ -96,6 +96,14 @@ export function capacity(event: Event): Capacity | null {
 }
 
 /**
+ * Where to book an event, or null when it has no booking page or is full.
+ * @param event Event to book.
+ */
+export function bookingUrl(event: Event): string | null {
+  return capacity(event)?.state === "full" ? null : (event.booking_url ?? null);
+}
+
+/**
  * "Rink · Sheet", or just the rink when it has one sheet.
  * @param event Event to describe.
  * @param rink The event's rink.

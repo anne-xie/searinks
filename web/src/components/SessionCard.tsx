@@ -2,19 +2,20 @@ import type { JSX } from "preact";
 
 import { Chip } from "@/components/Chip";
 import type { Event, Rink } from "@/data";
-import { capacity, formatTime, rinkLine } from "@/schedule";
+import { bookingUrl, capacity, formatTime, rinkLine } from "@/schedule";
 import "@/components/SessionCard.css";
 
 const SPORT_LABELS = { hockey: "Hockey", figure: "Figure", public: "Public" } as const;
 
 /**
- * One session in the list: times, title, where, sport and taken/total.
+ * One session in the list: times, title, where, sport, taken/total and a Book link when it can be booked.
  * @param event Session to show.
  * @param rink The session's rink.
  */
 export function SessionCard({ event, rink }: { event: Event; rink: Rink }): JSX.Element {
   const cap = capacity(event);
   const full = cap?.state === "full";
+  const bookUrl = bookingUrl(event);
   return (
     <article class={full ? "card card-full" : "card"}>
       <div class="card-times">
@@ -35,6 +36,11 @@ export function SessionCard({ event, rink }: { event: Event; rink: Rink }): JSX.
         </div>
       </div>
       {full && <span class="card-status">Full</span>}
+      {bookUrl && (
+        <a class="card-book" href={bookUrl} target="_blank" rel="noopener" aria-label={`Book ${event.title}`}>
+          Book
+        </a>
+      )}
     </article>
   );
 }
