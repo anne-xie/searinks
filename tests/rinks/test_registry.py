@@ -20,3 +20,18 @@ def test_registry_codes_are_unique() -> None:
 def test_registry_coordinates_are_in_the_seattle_area() -> None:
     # WHEN/THEN: every rink sits in a box around greater Seattle, so swapped or mistyped lat/lng stand out
     assert all(47.0 < rink.lat < 48.2 and -122.6 < rink.lng < -121.5 for rink in RINKS.values())
+
+
+def test_registry_short_names() -> None:
+    # WHEN: collecting each rink's compact label
+    short_names = {key: rink.short_name for key, rink in RINKS.items()}
+
+    # THEN: independent rinks use their codes and Sno-King buildings keep the brand
+    assert short_names == {
+        "kraken": "KCI",
+        "kirkland": "Sno-King Kirkland",
+        "renton": "Sno-King Renton",
+        "snoqualmie": "Sno-King Snoqualmie",
+        "ova": "OVA",
+        "lynnwood": "LIC",
+    }

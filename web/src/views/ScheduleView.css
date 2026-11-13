@@ -1,0 +1,44 @@
+/* Schedule list (#12). One centered column on wide screens until the grid (#13) sits beside it. */
+.schedule { max-width: 640px; margin: 0 auto; padding-bottom: 24px; }
+.schedule-sticky { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 6px 12px 0; }
+
+.filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 20px 0; }
+.filter-button {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--chip);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.filter-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: 700;
+  font-size: var(--text-2xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.showing { display: flex; align-items: center; gap: 5px; padding: 8px 20px 0; font-size: var(--text-sm); color: var(--muted); }
+.showing strong { color: var(--ink); font-weight: 700; }
+.showing-pin { display: flex; color: var(--accent); }
+.showing-change {
+  min-height: 28px;
+  padding: 0 4px;
+  font-size: var(--text-sm);
+}
+
+.day-heading { margin: 0; padding: 16px 20px 8px; font-family: var(--font-display); font-weight: 700; font-size: 19px; }
+.day-empty { margin: 0; padding: 0 20px; color: var(--muted); font-size: var(--text-md); }
+
+.cards { display: flex; flex-direction: column; gap: 8px; padding: 0 16px; }

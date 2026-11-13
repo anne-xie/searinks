@@ -4,7 +4,7 @@ from searinks.models.rink import Rink
 SNOQUALMIE = Rink(
     key="snoqualmie",
     name="Sno-King Snoqualmie",
-    short_name="Snoqualmie",
+    short_name="Sno-King Snoqualmie",
     code="SNQ",
     area="Snoqualmie",
     lat=47.5248,

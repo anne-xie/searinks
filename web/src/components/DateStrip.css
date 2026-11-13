@@ -1,0 +1,24 @@
+.strip { display: flex; }
+.strip-day {
+  flex: 1 1 0;
+  height: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--muted);
+}
+.strip-weekday { font-size: var(--text-sm); font-weight: 500; }
+.strip-number {
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--ink);
+}
+.strip-day[aria-current="date"] .strip-number { background: var(--accent); color: var(--surface); }

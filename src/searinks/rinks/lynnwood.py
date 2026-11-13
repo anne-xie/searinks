@@ -4,7 +4,7 @@ from searinks.rectimes.source import RecTimesSource
 LYNNWOOD = Rink(
     key="lynnwood",
     name="Lynnwood Ice Center",
-    short_name="Lynnwood",
+    short_name="LIC",
     code="LIC",
     area="Lynnwood",
     lat=47.8194,

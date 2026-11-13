@@ -4,7 +4,7 @@ from searinks.models.rink import Rink
 RENTON = Rink(
     key="renton",
     name="Sno-King Renton",
-    short_name="Renton",
+    short_name="Sno-King Renton",
     code="REN",
     area="Renton",
     lat=47.4898,
