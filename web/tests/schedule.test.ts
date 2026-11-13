@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Event, Rink } from "@/data";
 import {
+  bookingUrl,
   capacity,
   dayHeading,
   dayMessage,
@@ -165,5 +166,20 @@ describe("dayMessage", () => {
   ])("for %j is %j", (counts, expected) => {
     // WHEN/THEN: a day with nothing scheduled says so, and filtered-out events are told apart
     expect(dayMessage(counts)).toBe(expected);
+  });
+});
+
+describe("bookingUrl", () => {
+  const url = "https://example.test/book";
+
+  it.each<[string, Partial<Event>, string | null]>([
+    ["open with a link", { booking_url: url }, url],
+    ["unknown capacity with a link", { booking_url: url, capacity: null }, url],
+    ["full with a link", { booking_url: url, open_slots: 0 }, null],
+    ["no link", { booking_url: null }, null],
+    ["exported before links existed", {}, null],
+  ])("%s", (_name, overrides, expected) => {
+    // WHEN/THEN: only sessions that have a link and aren't full can be booked
+    expect(bookingUrl(event(overrides))).toBe(expected);
   });
 });

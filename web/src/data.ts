@@ -29,6 +29,8 @@ export type Event = {
   sport: string | null;
   drop_in: boolean;
   discipline: "hockey" | "figure" | "public" | null;
+  /** Missing from days exported before booking links existed. */
+  booking_url?: string | null;
 };
 
 export type Day = {

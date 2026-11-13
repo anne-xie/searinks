@@ -103,18 +103,19 @@ def _summary(event_id: str, name: str, open_slots: int = 10, capacity: int = 20)
     }
 
 
-def _team(team_id: int, sport_id: str, program_type_id: str) -> dict[str, Any]:
+def _team(team_id: int, sport_id: str, program_type_id: str, facility_id: int = 3) -> dict[str, Any]:
     """Build a JSON:API team (program) resource.
 
     Args:
         team_id: Team id referenced by an event's `hteam_id`.
         sport_id: Id of the team's sport.
         program_type_id: Id of the team's program type.
+        facility_id: Id of the building the program runs at.
     """
     return {
         "type": "teams",
         "id": str(team_id),
-        "attributes": {},
+        "attributes": {"facility_id": facility_id},
         "relationships": {
             "sport": {"data": {"type": "sports", "id": sport_id}},
             "programType": {"data": {"type": "program-types", "id": program_type_id}},
@@ -188,6 +189,32 @@ def test_parse_events_reads_sport_and_drop_in_from_program(
     # THEN: sport comes from the program and only the rink's drop-in program types count
     assert parsed.sport == sport
     assert parsed.drop_in is drop_in
+
+
+@pytest.mark.parametrize(
+    ("program", "booking_url"),
+    [
+        (
+            _team(7, sport_id="20", program_type_id="1", facility_id=3),
+            "https://apps.daysmartrecreation.com/dash/x/#/online/testco/event-registration"
+            "?date=2026-09-26&facility_ids=3&sport_ids=20",
+        ),
+        (_team(7, sport_id="31", program_type_id="2"), None),
+        (None, None),
+    ],
+)
+def test_parse_events_links_drop_ins_to_their_booking_page(
+    program: dict[str, Any] | None, booking_url: str | None
+) -> None:
+    # GIVEN: an event on 2026-09-26 linked to a drop-in program, a series program, or none
+    included = [_summary("1", "Thing"), *EVENT_TYPES, *PROGRAMS, *([program] if program else [])]
+    body = _page([_event("1", hteam_id=7 if program else None)], included)
+
+    # WHEN: parsing the page
+    (parsed,) = parse_events(body, RINK)
+
+    # THEN: only the drop-in links to that day's booking page, narrowed to its building and sport
+    assert parsed.booking_url == booking_url
 
 
 @pytest.mark.parametrize(

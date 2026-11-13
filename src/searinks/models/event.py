@@ -20,6 +20,8 @@ class Event:
         drop_in: Whether the event is sold per session rather than as a series.
         discipline: "hockey", "figure" or "public", resolved by the source's
             parser; see `discipline_for`.
+        booking_url: Page where the event can be booked online, if the source
+            sells it there.
     """
 
     id: str
@@ -34,3 +36,4 @@ class Event:
     sport: str | None = None
     drop_in: bool = False
     discipline: str | None = None
+    booking_url: str | None = None

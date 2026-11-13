@@ -159,6 +159,7 @@ def test_day_payloads_serializes_every_event_field() -> None:
                     "sport": "Hockey",
                     "drop_in": True,
                     "discipline": "hockey",
+                    "booking_url": None,
                 }
             ],
         }
