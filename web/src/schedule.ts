@@ -105,11 +105,11 @@ export function capacity(event: Event): Capacity | null {
 }
 
 /**
- * Where to book an event, or null when it has no booking page or is full.
+ * Where to book an event, or null when it has no booking page. Full events stay bookable: the count may be stale.
  * @param event Event to book.
  */
 export function bookingUrl(event: Event): string | null {
-  return capacity(event)?.state === "full" ? null : (event.booking_url ?? null);
+  return event.booking_url ?? null;
 }
 
 /**
