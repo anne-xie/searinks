@@ -21,5 +21,6 @@ LYNNWOOD = Rink(
             "Spicy Kittens": "hockey",
             "Theater on Ice": "figure",
         },
+        booking_url="https://www.lynnwoodicecenter.com/",
     ),
 )

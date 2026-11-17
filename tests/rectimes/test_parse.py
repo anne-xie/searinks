@@ -26,6 +26,7 @@ RINK = Rink(
         venues={10: "Main Rink", 11: "Studio"},
         drop_in_groups=frozenset({"Stick & Puck"}),
         discipline_overrides={"SJHA": "hockey"},
+        booking_url="https://rink.test/",
     ),
 )
 
@@ -70,7 +71,8 @@ def test_parse_bookings_reads_booking_fields() -> None:
     # WHEN: parsing the bookings
     events = parse_bookings(body, RINK)
 
-    # THEN: the event carries its rink, venue sheet name, localized times and discipline, with no type or sport
+    # THEN: the event carries its rink, venue sheet name, localized times, discipline and the rink's booking
+    # link, with no type or sport
     assert events == [
         Event(
             id="7",
@@ -81,6 +83,7 @@ def test_parse_bookings_reads_booking_fields() -> None:
             end=datetime(2026, 9, 26, 14, 15, tzinfo=PACIFIC),
             drop_in=True,
             discipline="hockey",
+            booking_url="https://rink.test/",
         )
     ]
 
@@ -139,8 +142,9 @@ def test_parse_bookings_marks_configured_groups_as_drop_in(group_name: str, drop
     # WHEN: parsing the bookings
     (parsed,) = parse_bookings(body, RINK)
 
-    # THEN: only the rink's drop-in groups count
+    # THEN: only the rink's drop-in groups count, and only they link to the rink's booking page
     assert parsed.drop_in is drop_in
+    assert parsed.booking_url == ("https://rink.test/" if drop_in else None)
 
 
 @pytest.mark.parametrize(
