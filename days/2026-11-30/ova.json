@@ -1,0 +1,82 @@
+{
+ "date": "2026-11-30",
+ "rink": "ova",
+ "generated_at": "2026-11-19T13:05:32.592714-08:00",
+ "events": [
+  {
+   "id": "8076358",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-30T06:00:00-08:00",
+   "end": "2026-11-30T09:00:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure",
+   "booking_url": "https://www.olympicviewarena.com/"
+  },
+  {
+   "id": "8076536",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-30T09:15:00-08:00",
+   "end": "2026-11-30T11:45:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure",
+   "booking_url": "https://www.olympicviewarena.com/"
+  },
+  {
+   "id": "8076838",
+   "title": "OVA Freestyle",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-30T14:00:00-08:00",
+   "end": "2026-11-30T17:00:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": true,
+   "discipline": "figure",
+   "booking_url": "https://www.olympicviewarena.com/"
+  },
+  {
+   "id": "8077053",
+   "title": "SJHA",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-30T17:15:00-08:00",
+   "end": "2026-11-30T22:00:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey",
+   "booking_url": null
+  },
+  {
+   "id": "8711093",
+   "title": "Kraken Hockey League",
+   "rink": "ova",
+   "sheet": "Main Rink",
+   "start": "2026-11-30T22:15:00-08:00",
+   "end": "2026-11-30T23:30:00-08:00",
+   "event_type": null,
+   "open_slots": null,
+   "capacity": null,
+   "sport": null,
+   "drop_in": false,
+   "discipline": "hockey",
+   "booking_url": null
+  }
+ ]
+}
