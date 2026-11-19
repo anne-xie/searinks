@@ -8,7 +8,7 @@ import "@/components/SessionCard.css";
 const SPORT_LABELS = { hockey: "Hockey", figure: "Figure", public: "Public" } as const;
 
 /**
- * One session in the list: times, title, where, sport, taken/total and a Book link when it can be booked.
+ * One session in the list: times, title, where, sport, taken/total and a Book link when it has a booking page.
  * @param event Session to show.
  * @param rink The session's rink.
  */
@@ -35,11 +35,12 @@ export function SessionCard({ event, rink }: { event: Event; rink: Rink }): JSX.
           )}
         </div>
       </div>
-      {full && <span class="card-status">Full</span>}
-      {bookUrl && (
+      {bookUrl ? (
         <a class="card-book" href={bookUrl} target="_blank" rel="noopener" aria-label={`Book ${event.title}`}>
           Book
         </a>
+      ) : (
+        full && <span class="card-status">Full</span>
       )}
     </article>
   );

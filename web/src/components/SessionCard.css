@@ -7,7 +7,8 @@
   border-radius: 18px;
   box-shadow: 0 2px 10px rgba(18, 40, 74, 0.07);
 }
-.card-full { opacity: 0.55; }
+/* Book stays undimmed so it doesn't look disabled. */
+.card-full > :not(.card-book) { opacity: 0.55; }
 .card-times { flex-shrink: 0; width: 50px; display: flex; flex-direction: column; line-height: 1.05; }
 .card-start { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--accent); }
 .card-end { font-size: var(--text-sm); font-weight: 500; color: var(--muted); }
