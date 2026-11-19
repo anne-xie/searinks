@@ -54,6 +54,7 @@ def _parse_booking(raw: dict[str, Any], rink: Rink, tz: ZoneInfo) -> Event | Non
         return None
     group = (raw.get("groupName") or "").strip()
     title = (raw.get("eventName") or "").strip() or group
+    drop_in = group in source.drop_in_groups
     if not title:
         logger.warning("rectimes_booking_untitled", extra=log_extra)
     return Event(
@@ -63,6 +64,7 @@ def _parse_booking(raw: dict[str, Any], rink: Rink, tz: ZoneInfo) -> Event | Non
         sheet=sheet,
         start=datetime.fromisoformat(raw["startTimeLocal"]).replace(tzinfo=tz),
         end=datetime.fromisoformat(raw["endTimeLocal"]).replace(tzinfo=tz),
-        drop_in=group in source.drop_in_groups,
+        drop_in=drop_in,
         discipline=discipline_for(None, title, source.discipline_overrides),
+        booking_url=source.booking_url if drop_in else None,
     )

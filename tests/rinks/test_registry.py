@@ -35,3 +35,14 @@ def test_registry_short_names() -> None:
         "ova": "OVA",
         "lynnwood": "LIC",
     }
+
+
+def test_registry_rectimes_rinks_link_to_their_own_sites() -> None:
+    # WHEN: collecting the booking page of the rinks that share a RecTimes facility
+    booking_urls = {key: RINKS[key].source.booking_url for key in ("ova", "lynnwood")}
+
+    # THEN: each rink points at its own website
+    assert booking_urls == {
+        "ova": "https://www.olympicviewarena.com/",
+        "lynnwood": "https://www.lynnwoodicecenter.com/",
+    }
